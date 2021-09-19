@@ -5,14 +5,12 @@ import { Command } from '../interfaces/Command';
 import { Event } from '../interfaces/Event';
 import * as fs from 'fs';
 import * as Path from 'path';
-import { Handler } from '../interfaces/Handler';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 
 class Bot extends Client {
     public logger?: Logger;
     private commands: Collection<string, Command> = new Collection();
-    private events: Collection<string, Event> = new Collection();
     private restAPI: REST;
     private config: BotConfig;
 
@@ -23,23 +21,30 @@ class Bot extends Client {
         this.restAPI = new REST({ version: '9' }).setToken(config.token);
 
         if (config.commandsFolder) {
-            this.loadHandlers(config.commandsFolder, this.commands);
+            this.loadCommands(config.commandsFolder);
         }
         if (config.eventsFolder) {
-            this.loadHandlers(config.eventsFolder, this.events);
+            this.loadEvents(config.eventsFolder);
         }
     }
 
-    private loadHandlers<Type extends Handler>(
-        folder: string,
-        collection: Collection<string, Type>
-    ) {
-        const handlerFiles = fs
+    private async loadCommands(folder: string) {
+        const commandFiles = fs
             .readdirSync(folder)
             .filter((file) => file.endsWith('.js'));
-        handlerFiles.map(async (file: string) => {
-            const handler: Type = await import(Path.join(folder, file));
-            collection.set(handler.name, handler);
+        commandFiles.map((file: string) => {
+            const handler: Command = require(Path.join(folder, file));
+            this.commands.set(handler.builder.name, handler);
+        });
+    }
+
+    private async loadEvents(folder: string) {
+        const events = fs
+            .readdirSync(folder)
+            .filter((file) => file.endsWith('.js'));
+        events.map((file: string) => {
+            const handler: Event = require(Path.join(folder, file));
+            this.registerEvent(handler.name, handler);
         });
     }
 
@@ -48,15 +53,19 @@ class Bot extends Client {
     }
 
     public async run() {
-        for (const { 0: eventName, 1: event } of this.events) {
-            if (event.once) {
-                this.once(eventName, event.handler.bind(null, this));
-            } else {
-                this.on(eventName, event.handler.bind(null, this));
-            }
-        }
         this.login(this.config.token);
         await this.registerCommands();
+    }
+
+    private registerEvent(eventName: string, event: Event): void {
+        if (event.once) {
+            this.once(eventName, event.handler.bind(null, this));
+        } else {
+            this.on(eventName, event.handler.bind(null, this));
+        }
+        this.logger?.info(
+            `Registered event ${eventName} (once=${!!event.once})`
+        );
     }
 
     private async registerCommands(): Promise<void> {
@@ -67,9 +76,13 @@ class Bot extends Client {
               )
             : Routes.applicationCommands(this.config.appId);
         try {
-            await this.restAPI.put(route, {
-                body: this.commands.map((command) => command.builder.toJSON()),
-            });
+            const commandsJSON = this.commands.map((command) =>
+                command.builder.toJSON()
+            );
+            await this.restAPI.put(route, { body: commandsJSON });
+            this.logger?.info(
+                `Succesfully registered ${commandsJSON.length} commands`
+            );
         } catch (error) {
             this.logger?.error(`Error loading commands: ${error}`);
         }

@@ -1,13 +1,12 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Interaction } from 'discord.js';
+import { CommandInteraction, Interaction } from 'discord.js';
 import { Bot } from '../client/Client';
-import { Handler } from './Handler';
 
 export interface CommandHandler {
-    (client: Bot, interaction: Interaction): Promise<void>;
+    (client: Bot, interaction: CommandInteraction): Promise<void>;
 }
 
-export interface Command extends Handler {
+export interface Command {
     handler: CommandHandler;
     builder: SlashCommandBuilder;
 }
