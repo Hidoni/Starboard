@@ -1,4 +1,3 @@
-import { Interaction } from 'discord.js';
 import { Bot } from '../client/Client';
 import { Handler } from './Handler';
 
