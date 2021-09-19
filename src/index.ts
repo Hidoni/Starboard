@@ -1,16 +1,23 @@
-import * as log4js from "log4js";
-import { Client, Intents } from "discord.js";
-import { getRelativePathname } from "./utils/file";
+import * as log4js from 'log4js';
+import { Intents } from 'discord.js';
+import { Bot } from './client/Client';
 
-log4js.configure("./config/log4js.json");
-const logger = log4js.getLogger(getRelativePathname(__filename));
+log4js.configure('./config/log4js.json');
+const logger = log4js.getLogger('starboard');
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const REQUIRED_ENV_VARS: string[] = ['BOT_TOKEN', 'BOT_APPLICATION_ID'];
+for (const envVar of REQUIRED_ENV_VARS) {
+    if (!process.env[envVar]) {
+        logger.error(`Missing required environment variable: ${envVar}`);
+        process.exit(1);
+    }
+}
 
-client.once("ready", () => {
-  logger.info(
-    `Bot ready, logged in as ${client.user!.username}#${client.user!.discriminator}`
-  );
+const bot = new Bot({
+    intents: [Intents.FLAGS.GUILDS],
+    token: process.env.BOT_TOKEN!,
+    appId: process.env.BOT_APPLICATION_ID!,
+    debugGuildId: process.env.DEBUG_GUILD_ID,
 });
 
-client.login(process.env.BOT_TOKEN);
+bot.run();
