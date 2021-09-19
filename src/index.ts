@@ -22,9 +22,10 @@ const bot = new Bot(
         debugGuildId: process.env.DEBUG_GUILD_ID,
         commandsFolder: Path.join(__dirname, 'commands/'),
         eventsFolder: Path.join(__dirname, 'events/'),
+        partials: ['REACTION', 'MESSAGE'],
     },
     logger
 );
 
-logger.info("Starting bot");
+logger.info('Starting bot');
 bot.run();
