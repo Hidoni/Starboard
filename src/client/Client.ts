@@ -42,7 +42,7 @@ class Bot extends Client {
         const events = fs
             .readdirSync(folder)
             .filter((file) => file.endsWith('.js'));
-        events.map((file: string) => {
+        events.forEach((file: string) => {
             const handler: Event = require(Path.join(folder, file));
             this.registerEvent(handler.name, handler);
         });
