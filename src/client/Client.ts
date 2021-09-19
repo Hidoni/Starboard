@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as Path from 'path';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
+import glob from 'glob';
 
 class Bot extends Client {
     public logger?: Logger;
@@ -28,23 +29,25 @@ class Bot extends Client {
         }
     }
 
-    private async loadCommands(folder: string) {
-        const commandFiles = fs
-            .readdirSync(folder)
-            .filter((file) => file.endsWith('.js'));
-        commandFiles.map((file: string) => {
-            const handler: Command = require(Path.join(folder, file));
-            this.commands.set(handler.builder.name, handler);
+    private loadCommands(folder: string) {
+        glob(Path.join(folder, '**/*.js'), (error, files) => {
+            if (!error) {
+                files.forEach((file: string) => {
+                    const handler: Command = require(file);
+                    this.commands.set(handler.builder.name, handler);
+                });
+            }
         });
     }
 
-    private async loadEvents(folder: string) {
-        const events = fs
-            .readdirSync(folder)
-            .filter((file) => file.endsWith('.js'));
-        events.forEach((file: string) => {
-            const handler: Event = require(Path.join(folder, file));
-            this.registerEvent(handler.name, handler);
+    private loadEvents(folder: string) {
+        glob(Path.join(folder, '**/*.js'), (error, files) => {
+            if (!error) {
+                files.forEach((file: string) => {
+                    const handler: Event = require(file);
+                    this.registerEvent(handler.name, handler);
+                });
+            }
         });
     }
 
