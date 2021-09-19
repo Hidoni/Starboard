@@ -15,7 +15,7 @@ class Bot extends Client {
     private config: BotConfig;
 
     public constructor(config: BotConfig, logger?: Logger) {
-        super({ intents: config.intents });
+        super({ intents: config.intents, partials: config.partials });
         this.config = config;
         this.logger = logger;
         this.restAPI = new REST({ version: '9' }).setToken(config.token);
