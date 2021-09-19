@@ -1,5 +1,5 @@
-const path = require('path');
+import * as Path from "path";
 
-module.exports = {
-    getRelativePathname: (filename: string) => path.relative(process.cwd(), filename),
+export const getRelativePathname = (filename: string) => {
+  return Path.relative(process.cwd(), filename);
 };
