@@ -1,0 +1,14 @@
+{
+    "appenders": {
+        "file": {
+            "type": "dateFile",
+            "filename": "logs/starboard.log"
+        },
+        "out": {
+            "type": "stdout"
+        }
+    },
+    "categories": {
+        "default": {"appenders": ["file", "out"], "level": "DEBUG"}
+    }
+}
