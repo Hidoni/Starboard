@@ -1,4 +1,3 @@
-require('dotenv').config();
 const log4js = require('log4js');
 const { Client, Intents } = require('discord.js');
 const { getRelativePathname } = require('./utils/file');

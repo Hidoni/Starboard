@@ -126,3 +126,5 @@ dist
 
 # vscode configurations
 .vscode
+# TS Output
+prod/
