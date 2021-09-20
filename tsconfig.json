@@ -6,7 +6,7 @@
         "module": "commonjs",
         "rootDir": "./src",
         "resolveJsonModule": true,
-        "outDir": "./prod",
+        "outDir": "./bin",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,

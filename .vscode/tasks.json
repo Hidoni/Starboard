@@ -13,7 +13,7 @@
             "label": "clear output folder",
             "type": "shell",
             "command": "rm",
-            "args": ["-r", "${workspaceFolder}/prod/"],
+            "args": ["-r", "${workspaceFolder}/bin/"],
             "group": "build"
         }
     ]
