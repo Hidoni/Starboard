@@ -2,7 +2,7 @@ import { Sequelize } from 'sequelize/types';
 import { DataTypes } from 'sequelize';
 import { DatabaseModelInitializer } from '../../interfaces/DatabaseModel';
 
-export const initializer: DatabaseModelInitializer = (sequelize: Sequelize) => {
+export const initialize: DatabaseModelInitializer = (sequelize: Sequelize) => {
     return sequelize.define(
         'starred_messages',
         {
