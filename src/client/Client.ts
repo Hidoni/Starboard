@@ -30,25 +30,25 @@ class Bot extends Client {
     }
 
     private loadCommands(folder: string) {
-        glob(Path.join(folder, '**/*.js'), (error, files) => {
-            if (!error) {
-                files.forEach((file: string) => {
-                    const handler: Command = require(file);
-                    this.commands.set(handler.builder.name, handler);
-                });
-            }
-        });
+        try {
+            glob.sync(Path.join(folder, '**/*.js')).forEach((file: string) => {
+                const handler: Command = require(file);
+                this.commands.set(handler.builder.name, handler);
+            });
+        } catch (error) {
+            this.logger?.error(`Failed to load commands: ${error}`);
+        }
     }
 
     private loadEvents(folder: string) {
-        glob(Path.join(folder, '**/*.js'), (error, files) => {
-            if (!error) {
-                files.forEach((file: string) => {
-                    const handler: Event = require(file);
-                    this.registerEvent(handler.name, handler);
-                });
-            }
-        });
+        try {
+            glob.sync(Path.join(folder, '**/*.js')).forEach((file: string) => {
+                const handler: Event = require(file);
+                this.registerEvent(handler.name, handler);
+            });
+        } catch (error) {
+            this.logger?.error(`Failed to load events: ${error}`);
+        }
     }
 
     public getCommand(commandName: string): Command | undefined {
