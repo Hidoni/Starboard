@@ -5,7 +5,7 @@ import { initialize as initializeCustomChannels } from './models/CustomChannels'
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: 'starboard.sqlite',
+    storage: process.env.DATABASE_PATH,
 });
 
 initializeStarredMessages(sequelize);
