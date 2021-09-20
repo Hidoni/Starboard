@@ -1,15 +1,9 @@
-import { Sequelize } from 'sequelize';
-import { initialize as initializeStarredMessages } from './models/StarredMessages';
-import { initialize as initializeServerConfig } from './models/ServerConfig';
-import { initialize as initializeCustomChannels } from './models/CustomChannels';
+import Database from './DatabaseObject';
 
-const sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: process.env.DATABASE_PATH,
-});
+if (process.env.DATABASE_PATH) {
+    const db = new Database(process.env.DATABASE_PATH);
 
-initializeStarredMessages(sequelize);
-initializeServerConfig(sequelize);
-initializeCustomChannels(sequelize);
-
-sequelize.sync();
+    db.sync();
+} else {
+    console.error("DATABASE_PATH env var is not defined");
+}
