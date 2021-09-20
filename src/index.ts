@@ -1,7 +1,7 @@
-import * as log4js from 'log4js';
+import log4js from 'log4js';
 import { Intents } from 'discord.js';
 import { Bot } from './client/Client';
-import * as Path from 'path';
+import path from 'path';
 
 log4js.configure('./config/log4js.json');
 const logger = log4js.getLogger('starboard');
@@ -20,8 +20,8 @@ const bot = new Bot(
         token: process.env.BOT_TOKEN!,
         appId: process.env.BOT_APPLICATION_ID!,
         debugGuildId: process.env.DEBUG_GUILD_ID,
-        commandsFolder: Path.join(__dirname, 'commands/'),
-        eventsFolder: Path.join(__dirname, 'events/'),
+        commandsFolder: path.join(__dirname, 'commands/'),
+        eventsFolder: path.join(__dirname, 'events/'),
         partials: ['REACTION', 'MESSAGE'],
     },
     logger

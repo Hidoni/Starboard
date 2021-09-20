@@ -3,8 +3,7 @@ import { Client, Intents, Collection } from 'discord.js';
 import { BotConfig } from '../interfaces/BotConfig';
 import { Command } from '../interfaces/Command';
 import { Event } from '../interfaces/Event';
-import * as fs from 'fs';
-import * as Path from 'path';
+import path from 'path';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import glob from 'glob';
@@ -31,7 +30,7 @@ class Bot extends Client {
 
     private loadCommands(folder: string) {
         try {
-            glob.sync(Path.join(folder, '**/*.js')).forEach((file: string) => {
+            glob.sync(path.join(folder, '**/*.js')).forEach((file: string) => {
                 const handler: Command = require(file);
                 this.commands.set(handler.builder.name, handler);
             });
@@ -42,7 +41,7 @@ class Bot extends Client {
 
     private loadEvents(folder: string) {
         try {
-            glob.sync(Path.join(folder, '**/*.js')).forEach((file: string) => {
+            glob.sync(path.join(folder, '**/*.js')).forEach((file: string) => {
                 const handler: Event = require(file);
                 this.registerEvent(handler.name, handler);
             });
