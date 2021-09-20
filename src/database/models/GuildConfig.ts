@@ -4,7 +4,7 @@ import { DatabaseModelInitializer } from '../../interfaces/DatabaseModel';
 
 export const initialize: DatabaseModelInitializer = (sequelize: Sequelize) => {
     return sequelize.define(
-        'server_config',
+        'guild_config',
         {
             guild_id: {
                 type: DataTypes.STRING,

@@ -1,5 +1,5 @@
 import { initialize as initializeStarredMessages } from './models/StarredMessages';
-import { initialize as initializeServerConfig } from './models/ServerConfig';
+import { initialize as initializeGuildConfig } from './models/GuildConfig';
 import { initialize as initializeCustomChannels } from './models/CustomChannels';
 import { Model, ModelCtor } from 'sequelize/types';
 import { Sequelize } from 'sequelize';
@@ -18,7 +18,7 @@ class Database {
             logging: logger?.debug.bind(logger),
         });
         this.starredMessages = initializeStarredMessages(this.sequelize);
-        this.serverConfig = initializeServerConfig(this.sequelize);
+        this.serverConfig = initializeGuildConfig(this.sequelize);
         this.CustomChannels = initializeCustomChannels(this.sequelize);
     }
 
