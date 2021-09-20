@@ -126,3 +126,6 @@ dist
 
 # TS Output
 bin/
+
+# Datbase
+starboard.sqlite
