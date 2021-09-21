@@ -30,7 +30,9 @@ class Database {
         this.sequelize.sync();
     }
 
-    public async getGuildConfig(guildId: Snowflake): Promise<GuildConfigInstance> {
+    public async getGuildConfig(
+        guildId: Snowflake
+    ): Promise<GuildConfigInstance> {
         let result = await this.guildConfig.findOne({
             where: { guildId: guildId },
         });
@@ -45,6 +47,14 @@ class Database {
     ): Promise<CustomChannelInstance | null> {
         return await this.customChannels.findOne({
             where: { channelId: channelId },
+        });
+    }
+
+    public async getStarredMessage(
+        messageId: Snowflake
+    ): Promise<StarredMessageInstance | null> {
+        return await this.starredMessages.findOne({
+            where: { messageId: messageId },
         });
     }
 }
