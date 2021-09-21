@@ -1,10 +1,11 @@
+import { Snowflake } from "discord.js";
 import { Model } from "sequelize/types";
 
 export interface GuildConfigInstance extends Model {
-    guildId: string;
-    sfwChannelId: string;
-    nsfwChannelId: string;
-    emoji: string;
+    guildId: Snowflake;
+    sfwChannelId: Snowflake;
+    nsfwChannelId: Snowflake;
+    emoji: Snowflake | string;
     isUnicode: boolean;
     minimumReacts: number;
 }
