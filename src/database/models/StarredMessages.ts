@@ -1,28 +1,29 @@
 import { Sequelize } from 'sequelize/types';
 import { DataTypes } from 'sequelize';
 import { DatabaseModelInitializer } from '../../interfaces/DatabaseModel';
+import { StarredMessageInstance } from '../../interfaces/StarredMessages';
 
-export const initialize: DatabaseModelInitializer = (sequelize: Sequelize) => {
+export const initialize: DatabaseModelInitializer<StarredMessageInstance> = (sequelize: Sequelize) => {
     return sequelize.define(
         'starred_messages',
         {
-            message_id: {
+            messageId: {
                 type: DataTypes.STRING,
                 primaryKey: true,
             },
-            guild_id: {
+            guildId: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            user_id: {
+            userId: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            starboard_message_id: {
+            starboardMessageId: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            star_count: {
+            starCount: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },

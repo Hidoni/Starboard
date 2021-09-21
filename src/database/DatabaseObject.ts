@@ -4,12 +4,15 @@ import { initialize as initializeCustomChannels } from './models/CustomChannels'
 import { Model, ModelCtor } from 'sequelize/types';
 import { Sequelize } from 'sequelize';
 import { Logger } from 'log4js';
+import { GuildConfigInstance } from '../interfaces/GuildConfig';
+import { StarredMessageInstance } from '../interfaces/StarredMessages';
+import { CustomChannelInstance } from '../interfaces/CustomChannels';
 
 class Database {
     private sequelize: Sequelize;
-    public starredMessages: ModelCtor<Model<any, any>>;
-    public serverConfig: ModelCtor<Model<any, any>>;
-    public CustomChannels: ModelCtor<Model<any, any>>;
+    private starredMessages: ModelCtor<StarredMessageInstance>;
+    private guildConfig: ModelCtor<GuildConfigInstance>;
+    private CustomChannels: ModelCtor<CustomChannelInstance>;
 
     public constructor(database_path: string, logger?: Logger) {
         this.sequelize = new Sequelize({
@@ -18,12 +21,20 @@ class Database {
             logging: logger?.debug.bind(logger),
         });
         this.starredMessages = initializeStarredMessages(this.sequelize);
-        this.serverConfig = initializeGuildConfig(this.sequelize);
+        this.guildConfig = initializeGuildConfig(this.sequelize);
         this.CustomChannels = initializeCustomChannels(this.sequelize);
     }
 
     public sync(): void {
         this.sequelize.sync();
+    }
+
+    public async getGuildConfig(guildId: string): Promise<GuildConfigInstance> {
+        let result = await this.guildConfig.findOne({ where: { guildId: guildId } });
+        if (!result) {
+            result = await this.guildConfig.create({guildId: guildId})
+        }
+        return result;
     }
 }
 

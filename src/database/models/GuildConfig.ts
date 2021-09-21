@@ -1,34 +1,36 @@
 import { Sequelize } from 'sequelize/types';
 import { DataTypes } from 'sequelize';
 import { DatabaseModelInitializer } from '../../interfaces/DatabaseModel';
+import { GuildConfigInstance } from '../../interfaces/GuildConfig';
 
-export const initialize: DatabaseModelInitializer = (sequelize: Sequelize) => {
+export const initialize: DatabaseModelInitializer<GuildConfigInstance> = (
+    sequelize: Sequelize
+) => {
     return sequelize.define(
         'guild_config',
         {
-            guild_id: {
+            guildId: {
                 type: DataTypes.STRING,
+                allowNull: false,
                 primaryKey: true,
             },
-            sfw_channel_id: {
+            sfwChannelId: {
                 type: DataTypes.STRING,
-                allowNull: false,
             },
-            nsfw_channel_id: {
+            nsfwChannelId: {
                 type: DataTypes.STRING,
-                allowNull: false,
             },
             emoji: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 defaultValue: '\u2b50',
             },
-            is_unicode: {
+            isUnicode: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: true,
             },
-            minimum_reactions: {
+            minimumReacts: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 5,

@@ -1,9 +1,9 @@
 import { Model, ModelCtor, Sequelize } from 'sequelize/types';
 
-export interface DatabaseModelInitializer {
-    (sequelize: Sequelize): ModelCtor<Model<any, any>>;
+export interface DatabaseModelInitializer<M extends Model> {
+    (sequelize: Sequelize): ModelCtor<M>;
 }
 
-export interface DatabaseModel {
-    initializer: DatabaseModelInitializer;
+export interface DatabaseModel<M extends Model> {
+    initializer: DatabaseModelInitializer<M>;
 }

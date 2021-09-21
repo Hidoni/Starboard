@@ -1,16 +1,17 @@
 import { Sequelize } from 'sequelize/types';
 import { DataTypes } from 'sequelize';
 import { DatabaseModelInitializer } from '../../interfaces/DatabaseModel';
+import { CustomChannelInstance } from '../../interfaces/CustomChannels';
 
-export const initialize: DatabaseModelInitializer = (sequelize: Sequelize) => {
+export const initialize: DatabaseModelInitializer<CustomChannelInstance> = (sequelize: Sequelize) => {
     return sequelize.define(
         'custom_starboard_channels',
         {
-            channel_id: {
+            channelId: {
                 type: DataTypes.STRING,
                 primaryKey: true,
             },
-            starboard_id: {
+            starboardId: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
