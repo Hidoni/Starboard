@@ -7,9 +7,11 @@ import path from 'path';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import glob from 'glob';
+import Database from '../database/DatabaseObject';
 
 class Bot extends Client {
     public logger?: Logger;
+    public database: Database;
     private commands: Collection<string, Command> = new Collection();
     private restAPI: REST;
     private config: BotConfig;
@@ -18,6 +20,7 @@ class Bot extends Client {
         super({ intents: config.intents, partials: config.partials });
         this.config = config;
         this.logger = logger;
+        this.database = config.database
         this.restAPI = new REST({ version: '9' }).setToken(config.token);
 
         if (config.commandsFolder) {
