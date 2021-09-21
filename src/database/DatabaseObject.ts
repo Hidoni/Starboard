@@ -13,7 +13,7 @@ class Database {
     private sequelize: Sequelize;
     private starredMessages: ModelCtor<StarredMessageInstance>;
     private guildConfig: ModelCtor<GuildConfigInstance>;
-    private CustomChannels: ModelCtor<CustomChannelInstance>;
+    private customChannels: ModelCtor<CustomChannelInstance>;
 
     public constructor(database_path: string, logger?: Logger) {
         this.sequelize = new Sequelize({
@@ -23,7 +23,7 @@ class Database {
         });
         this.starredMessages = initializeStarredMessages(this.sequelize);
         this.guildConfig = initializeGuildConfig(this.sequelize);
-        this.CustomChannels = initializeCustomChannels(this.sequelize);
+        this.customChannels = initializeCustomChannels(this.sequelize);
     }
 
     public sync(): void {
@@ -43,7 +43,7 @@ class Database {
     public async getCustomChannel(
         channelId: Snowflake
     ): Promise<CustomChannelInstance | null> {
-        return await this.CustomChannels.findOne({
+        return await this.customChannels.findOne({
             where: { channelId: channelId },
         });
     }
