@@ -7,6 +7,7 @@ import { Logger } from 'log4js';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
 import { StarredMessageInstance } from '../interfaces/StarredMessages';
 import { CustomChannelInstance } from '../interfaces/CustomChannels';
+import { Snowflake } from 'discord.js';
 
 class Database {
     private sequelize: Sequelize;
@@ -29,12 +30,22 @@ class Database {
         this.sequelize.sync();
     }
 
-    public async getGuildConfig(guildId: string): Promise<GuildConfigInstance> {
-        let result = await this.guildConfig.findOne({ where: { guildId: guildId } });
+    public async getGuildConfig(guildId: Snowflake): Promise<GuildConfigInstance> {
+        let result = await this.guildConfig.findOne({
+            where: { guildId: guildId },
+        });
         if (!result) {
-            result = await this.guildConfig.create({guildId: guildId})
+            result = await this.guildConfig.create({ guildId: guildId });
         }
         return result;
+    }
+
+    public async getCustomChannel(
+        channelId: Snowflake
+    ): Promise<CustomChannelInstance | null> {
+        return await this.CustomChannels.findOne({
+            where: { channelId: channelId },
+        });
     }
 }
 
