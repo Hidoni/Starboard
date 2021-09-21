@@ -35,7 +35,7 @@ export const initialize: DatabaseModelInitializer<StarredMessageInstance> = (
             timestamps: false,
             indexes: [
                 {
-                    fields: ['guild_id', 'user_id'],
+                    fields: ['guildId', 'userId'],
                 },
             ],
         }
