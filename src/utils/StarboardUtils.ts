@@ -1,24 +1,34 @@
 import {
-    Message,
     MessageEmbed,
     MessageReaction,
+    NewsChannel,
     Snowflake,
     TextChannel,
+    ThreadChannel,
 } from 'discord.js';
 import Database from '../database/DatabaseObject';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
 
 const STARBOARD_EMBED_COLOR: readonly [number, number, number] = [255, 172, 51];
 const DEFAULT_STARBOARD_EMOJI: string = '⭐';
+type StarrableChannel = TextChannel | NewsChannel | ThreadChannel;
 
 export async function findStarboardChannelForTextChannel(
     config: GuildConfigInstance,
-    channel: TextChannel,
+    channel: StarrableChannel,
     database: Database
-): Promise<Snowflake> {
+): Promise<Snowflake | null> {
     const customChannel = await database.getCustomChannel(channel.id);
     if (customChannel) {
         return customChannel.starboardId;
+    }
+    if (channel instanceof ThreadChannel) {
+        if (channel.parent) {
+            return channel.parent.nsfw
+                ? config.nsfwChannelId
+                : config.sfwChannelId;
+        }
+        return config.sfwChannelId;
     }
     return channel.nsfw ? config.nsfwChannelId : config.sfwChannelId;
 }
