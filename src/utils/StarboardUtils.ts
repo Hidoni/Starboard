@@ -1,7 +1,11 @@
+import { APIInteractionGuildMember } from 'discord.js/node_modules/discord-api-types';
 import {
+    GuildMember,
     MessageEmbed,
     MessageReaction,
     NewsChannel,
+    Permissions,
+    PermissionResolvable,
     Snowflake,
     TextChannel,
     ThreadChannel,
@@ -76,4 +80,12 @@ export async function generateStarboardEmbed(
         embed.setImage(firstAttachment.url);
     }
     return embed;
+}
+
+export function hasPermissions(member: GuildMember | APIInteractionGuildMember, permissions: PermissionResolvable, checkAdmin?: boolean): boolean {
+    if (member instanceof GuildMember) {
+        return member.permissions.has(permissions, checkAdmin);
+    }
+    const userPermissions = BigInt(member.permissions);
+    return new Permissions(userPermissions).has(permissions, checkAdmin);
 }
