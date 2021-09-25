@@ -7,7 +7,7 @@ import { Logger } from 'log4js';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
 import { StarredMessageInstance } from '../interfaces/StarredMessages';
 import { CustomChannelInstance } from '../interfaces/CustomChannels';
-import { Snowflake } from 'discord.js';
+import { Message, MessageReaction, Snowflake } from 'discord.js';
 
 class Database {
     private sequelize: Sequelize;
@@ -55,6 +55,19 @@ class Database {
     ): Promise<StarredMessageInstance | null> {
         return await this.starredMessages.findOne({
             where: { messageId: messageId },
+        });
+    }
+
+    public async addNewStarredMessage(
+        reaction: MessageReaction,
+        starboardMessage: Message
+    ): Promise<StarredMessageInstance> {
+        return this.starredMessages.create({
+            messageId: reaction.message.id,
+            guildId: reaction.message.guildId,
+            userId: reaction.message.author ? reaction.message.author.id : null,
+            starboardMessageId: starboardMessage.id,
+            starCount: reaction.count,
         });
     }
 }
