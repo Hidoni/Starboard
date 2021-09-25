@@ -20,7 +20,6 @@ export const initialize: DatabaseModelInitializer<StarredMessageInstance> = (
             },
             userId: {
                 type: DataTypes.STRING,
-                allowNull: false,
             },
             starboardMessageId: {
                 type: DataTypes.STRING,
