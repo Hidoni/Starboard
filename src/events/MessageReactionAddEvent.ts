@@ -3,9 +3,9 @@ import {
     MessageReaction,
     PartialMessageReaction,
     ReactionEmoji,
-    TextBasedChannel,
     User,
     TextBasedChannels,
+    BaseGuildTextChannel,
 } from 'discord.js';
 import { Bot } from '../client/Client';
 import { EventHandler } from '../interfaces/Event';
@@ -15,6 +15,14 @@ import {
     generateStarboardEmbed,
     findStarboardChannelForTextChannel,
 } from '../utils/StarboardUtils';
+
+const VALID_STARBOARD_CHANNEL_TYPES = [
+    'GUILD_TEXT',
+    'GUILD_NEWS',
+    'GUILD_NEWS_THREAD',
+    'GUILD_PUBLIC_THREAD',
+    'GUILD_PRIVATE_THREAD',
+];
 
 function isStarEmoji(
     guildConfig: GuildConfigInstance,
@@ -46,7 +54,7 @@ async function getStarboardChannelFromChannel(
         client.logger?.debug(
             `Starboard channel could not be fetched (id is ${channelId}), assuming intentional`
         );
-    } else if (!(starboardChannel instanceof TextBasedChannel)) {
+    } else if (!VALID_STARBOARD_CHANNEL_TYPES.includes(starboardChannel.type)) {
         client.logger?.debug(
             `Misconfigured starboard channel (id is ${channelId}) isn't text-based`
         );
