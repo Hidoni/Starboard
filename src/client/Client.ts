@@ -20,7 +20,7 @@ class Bot extends Client {
         super({ intents: config.intents, partials: config.partials });
         this.config = config;
         this.logger = logger;
-        this.database = config.database
+        this.database = config.database;
         this.restAPI = new REST({ version: '9' }).setToken(config.token);
 
         if (config.commandsFolder) {
@@ -34,8 +34,14 @@ class Bot extends Client {
     private loadCommands(folder: string) {
         try {
             glob.sync(path.join(folder, '**/*.js')).forEach((file: string) => {
-                const handler: Command = require(file);
-                this.commands.set(handler.builder.name, handler);
+                try {
+                    const handler: Command = require(file);
+                    this.commands.set(handler.builder.name, handler);
+                } catch (error) {
+                    this.logger?.error(
+                        `Failed to load command at ${file}: ${error}`
+                    );
+                }
             });
         } catch (error) {
             this.logger?.error(`Failed to load commands: ${error}`);
@@ -45,8 +51,14 @@ class Bot extends Client {
     private loadEvents(folder: string) {
         try {
             glob.sync(path.join(folder, '**/*.js')).forEach((file: string) => {
-                const handler: Event = require(file);
-                this.registerEvent(handler.name, handler);
+                try {
+                    const handler: Event = require(file);
+                    this.registerEvent(handler.name, handler);
+                } catch (error) {
+                    this.logger?.error(
+                        `Failed to load event at ${file}: ${error}`
+                    );
+                }
             });
         } catch (error) {
             this.logger?.error(`Failed to load events: ${error}`);
