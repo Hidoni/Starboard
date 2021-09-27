@@ -127,7 +127,7 @@ async function modifyStarboardMinimum(
     if (minimum < 1) {
         return 'Minimum must be at least 1';
     }
-    config.minimumReacts = 1;
+    config.minimumReacts = minimum;
     return `Minimum reactions set to ${config.minimumReacts}`;
 }
 
