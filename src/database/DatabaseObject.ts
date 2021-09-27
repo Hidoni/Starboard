@@ -1,14 +1,20 @@
 import { initialize as initializeStarredMessages } from './models/StarredMessages';
 import { initialize as initializeGuildConfig } from './models/GuildConfig';
 import { initialize as initializeCustomChannels } from './models/CustomChannels';
-import { Model, ModelCtor } from 'sequelize/types';
+import { ModelCtor } from 'sequelize/types';
 import { Sequelize } from 'sequelize';
 import { Logger } from 'log4js';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
 import { StarredMessageInstance } from '../interfaces/StarredMessages';
 import { CustomChannelInstance } from '../interfaces/CustomChannels';
-import { Message, MessageReaction, Snowflake } from 'discord.js';
-
+import {
+    Guild,
+    GuildChannel,
+    Message,
+    MessageReaction,
+    Snowflake,
+} from 'discord.js';
+import { APIInteractionDataResolvedChannel } from 'discord.js/node_modules/discord-api-types';
 class Database {
     private sequelize: Sequelize;
     private starredMessages: ModelCtor<StarredMessageInstance>;
@@ -47,6 +53,18 @@ class Database {
     ): Promise<CustomChannelInstance | null> {
         return await this.customChannels.findOne({
             where: { channelId: channelId },
+        });
+    }
+
+    public async addCustomChannel(
+        channel: GuildChannel | APIInteractionDataResolvedChannel,
+        starboard: GuildChannel | APIInteractionDataResolvedChannel,
+        guild: Guild
+    ): Promise<CustomChannelInstance> {
+        return this.customChannels.create({
+            channelId: channel.id,
+            starboardId: starboard.id,
+            guildId: guild.id,
         });
     }
 
