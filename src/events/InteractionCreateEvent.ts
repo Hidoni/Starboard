@@ -47,7 +47,18 @@ export const handler: EventHandler = async (
         const command = client.getCommand(interaction.commandName);
         if (command) {
             if (await canRunCommand(client, interaction, command)) {
-                await command.handler(client, interaction);
+                command.handler(client, interaction).catch((error) => {
+                    client.logger?.error(
+                        `Got the following error while executing ${interaction.commandName} command: ${error}`
+                    );
+                    if (!interaction.replied) {
+                        interaction.reply({
+                            content:
+                                'An unknown error has occured and has been logged, please contact the developer to report this.',
+                            ephemeral: true,
+                        });
+                    }
+                });
             }
         } else {
             client.logger?.debug(
