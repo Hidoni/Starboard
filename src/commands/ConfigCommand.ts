@@ -59,6 +59,7 @@ async function handleCustomStarboardCommandGroup(
             );
             await interaction.reply({
                 content: `Succesfully added override from starred messages in ${target} to ${customStarboard}`,
+                ephemeral: true,
             });
             break;
         case 'remove':
@@ -75,6 +76,7 @@ async function handleCustomStarboardCommandGroup(
             )?.destroy();
             await interaction.reply({
                 content: `Succesfully removed override from starred messages in ${channel}`,
+                ephemeral: true,
             });
             break;
         default:
