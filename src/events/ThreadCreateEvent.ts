@@ -13,7 +13,7 @@ export const handler: EventHandler = async (
             .join()
             .catch((error) =>
                 client.logger?.debug(
-                    `Ignoring potential permission error while attempting to join thread in guild with ID ${thread.guildId}`
+                    `Ignoring potential permission error while attempting to join thread in guild with ID ${thread.guildId} (error: ${error})`
                 )
             );
     }

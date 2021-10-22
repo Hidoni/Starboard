@@ -139,7 +139,7 @@ export const handler: EventHandler = async (
                     .remove(user)
                     .catch((error) =>
                         client.logger?.debug(
-                            `Ignoring potential permission error while attempting to remove reaction in guild with ID ${reaction.message.guildId}`
+                            `Ignoring potential permission error while attempting to remove reaction in guild with ID ${reaction.message.guildId} (error: ${error})`
                         )
                     );
             } else {
