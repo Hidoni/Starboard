@@ -10,4 +10,5 @@ export interface BotConfig {
     partials?: PartialTypes[];
     commandsFolder?: string;
     eventsFolder?: string;
+    componentHandlersFolder?: string;
 }

@@ -8,11 +8,13 @@ import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import glob from 'glob';
 import Database from '../database/DatabaseObject';
+import { ComponentHandler } from '../interfaces/ComponentHandler';
 
 class Bot extends Client {
     public logger?: Logger;
     public database: Database;
     private commands: Collection<string, Command> = new Collection();
+    private componentHandlers: Collection<RegExp, ComponentHandler> = new Collection();
     private restAPI: REST;
     private config: BotConfig;
 
@@ -28,6 +30,9 @@ class Bot extends Client {
         }
         if (config.eventsFolder) {
             this.loadEvents(config.eventsFolder);
+        }
+        if (config.componentHandlersFolder) {
+            this.loadComponentHandlers(config.componentHandlersFolder);
         }
     }
 
@@ -65,8 +70,37 @@ class Bot extends Client {
         }
     }
 
+    private loadComponentHandlers(folder: string) {
+        try {
+            glob.sync(path.join(folder, '**/*.js')).forEach((file: string) => {
+                try {
+                    const handler: ComponentHandler = require(file);
+                    this.componentHandlers.set(handler.pattern, handler);
+                } catch (error) {
+                    this.logger?.error(
+                        `Failed to load component handler at ${file}: ${error}`
+                    );
+                }
+            });
+            this.logger?.info(
+                `Succesfully registered ${this.componentHandlers.size} component handlers`
+            );
+        } catch (error) {
+            this.logger?.error(`Failed to load component handlers: ${error}`);
+        }
+    }
+
     public getCommand(commandName: string): Command | undefined {
         return this.commands.get(commandName);
+    }
+
+    public getComponentHandler(componentId: string): ComponentHandler | undefined {
+        for (const {0: idPattern, 1: componentHandler} of this.componentHandlers) {
+            if (idPattern.test(componentId)) {
+                return componentHandler;
+            }
+        }
+        return undefined;
     }
 
     public async run() {
