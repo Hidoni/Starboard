@@ -28,6 +28,7 @@ const bot = new Bot(
         debugGuildId: process.env.DEBUG_GUILD_ID,
         commandsFolder: path.join(__dirname, 'commands/'),
         eventsFolder: path.join(__dirname, 'events/'),
+        componentHandlersFolder: path.join(__dirname, 'component_handlers/'),
         partials: ['REACTION', 'MESSAGE'],
     },
     logger
