@@ -96,6 +96,18 @@ class Database {
             where: { guildId: guildId },
         });
     }
+
+    public async getStarredMessagesInGuildByUsers(guildId: Snowflake) {
+        return this.starredMessages.findAll({
+            where: { guildId: guildId },
+            attributes: [
+                'userId',
+                [Sequelize.fn('SUM', Sequelize.col('starCount')), 'starCount'],
+            ],
+            group: ['userId'],
+            order: Sequelize.literal('starCount DESC'),
+        });
+    }
 }
 
 export default Database;
