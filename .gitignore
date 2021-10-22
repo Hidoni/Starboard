@@ -129,3 +129,5 @@ bin/
 
 # Datbase
 starboard.sqlite
+params.json
+starred.json
