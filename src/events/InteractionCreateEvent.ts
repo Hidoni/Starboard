@@ -1,4 +1,12 @@
-import { CommandInteraction, Interaction } from 'discord.js';
+import {
+    ContextMenuCommandBuilder,
+    SlashCommandBuilder,
+} from '@discordjs/builders';
+import {
+    CommandInteraction,
+    ContextMenuInteraction,
+    Interaction,
+} from 'discord.js';
 import { Bot } from '../client/Client';
 import { Command } from '../interfaces/Command';
 import { EventHandler } from '../interfaces/Event';
@@ -7,7 +15,7 @@ import { hasPermissions } from '../utils/StarboardUtils';
 async function canRunCommand(
     client: Bot,
     interaction: CommandInteraction,
-    command: Command
+    command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>
 ): Promise<boolean> {
     if (command.guildOnly && !interaction.guild) {
         await interaction.reply({
@@ -38,25 +46,55 @@ async function canRunCommand(
     return true;
 }
 
+function handleCommandCall(
+    command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>,
+    client: Bot,
+    interaction: CommandInteraction | ContextMenuInteraction
+): void {
+    if (
+        interaction.isContextMenu() &&
+        command.builder instanceof ContextMenuCommandBuilder
+    ) {
+        (command as Command<ContextMenuCommandBuilder>).handler(
+            client,
+            interaction
+        );
+    } else if (
+        interaction.isCommand() &&
+        command.builder instanceof SlashCommandBuilder
+    ) {
+        (command as Command<SlashCommandBuilder>).handler(client, interaction);
+    } else {
+        throw new Error(
+            `Mismatch between interaction type and command type in command ${command.builder.name}`
+        );
+    }
+}
+
 export const name: string = 'interactionCreate';
 export const handler: EventHandler = async (
     client: Bot,
     interaction: Interaction
 ) => {
-    if (interaction.isCommand()) {
+    if (interaction.isCommand() || interaction.isContextMenu()) {
         const command = client.getCommand(interaction.commandName);
         if (command) {
             if (await canRunCommand(client, interaction, command)) {
-                command.handler(client, interaction).catch((error) => {
+                try {
+                    handleCommandCall(command, client, interaction);
+                } catch (error) {
                     client.logger?.error(
                         `Got the following error while executing ${interaction.commandName} command: ${error}`
                     );
-                    interaction.reply({
+                    const replyFunction = interaction.replied
+                        ? interaction.followUp.bind(interaction)
+                        : interaction.reply.bind(interaction);
+                    replyFunction({
                         content:
                             'An unknown error has occured and has been logged, please contact the developer to report this.',
                         ephemeral: true,
                     });
-                });
+                }
             }
         } else {
             client.logger?.debug(
@@ -72,7 +110,10 @@ export const handler: EventHandler = async (
                 client.logger?.error(
                     `Got the following error while handling a component with id ${interaction.customId}: ${error}`
                 );
-                interaction.reply({
+                const replyFunction = interaction.replied
+                    ? interaction.followUp.bind(interaction)
+                    : interaction.reply.bind(interaction);
+                replyFunction({
                     content:
                         'An unknown error has occured and has been logged, please contact the developer to report this.',
                     ephemeral: true,
