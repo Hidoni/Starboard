@@ -139,7 +139,7 @@ export function generateLeaderboardComponentsRow(
         new MessageButton()
             .setEmoji('⏮')
             .setStyle('PRIMARY')
-            .setCustomId('leaderboard_0')
+            .setCustomId('leaderboard_FIRST')
             .setDisabled(page === 1),
         new MessageButton()
             .setEmoji('◀')
@@ -154,7 +154,7 @@ export function generateLeaderboardComponentsRow(
         new MessageButton()
             .setEmoji('⏭')
             .setStyle('PRIMARY')
-            .setCustomId('leaderboard_-1')
+            .setCustomId('leaderboard_LAST')
             .setDisabled(page === pageCount)
     );
 }
