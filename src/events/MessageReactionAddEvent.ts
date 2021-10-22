@@ -97,7 +97,8 @@ async function updateExistingStarredMessage(
             embeds: [await generateStarboardEmbed(reaction)],
         });
     }
-    starredMessage.update('starCount', reaction.count);
+    starredMessage.starCount = reaction.count;
+    starredMessage.save();
     client.logger?.info(
         `Updated existing starred message for message with id ${starredMessage}, new star count is ${reaction.count}`
     );
