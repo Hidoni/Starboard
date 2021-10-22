@@ -13,6 +13,7 @@ import {
     GuildEmoji,
     MessageActionRow,
     MessageButton,
+    Message,
 } from 'discord.js';
 import Database from '../database/DatabaseObject';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
@@ -48,6 +49,25 @@ export async function generateStarboardEmbed(
     reaction: MessageReaction
 ): Promise<MessageEmbed> {
     const message = await reaction.message.fetch();
+    let embed = generateBasicStarboardEmbed(message);
+    if (!reaction.emoji.id) {
+        embed.setFooter(
+            ` ${reaction.emoji.name} ${reaction.count} ${
+                reaction.emoji.name === DEFAULT_STARBOARD_EMOJI ? 'stars' : ''
+            }`
+        );
+    } else if (reaction.emoji.name && reaction.emoji.url) {
+        embed.setFooter(
+            `${reaction.count} ${reaction.emoji.name.toLowerCase()}`,
+            reaction.emoji.url
+        );
+    }
+    return embed;
+}
+
+export function generateBasicStarboardEmbed(
+    message: Message
+): MessageEmbed {
     let embed = new MessageEmbed()
         .setTitle('content')
         .setDescription(message.content)
@@ -70,18 +90,6 @@ export async function generateStarboardEmbed(
                 inline: false,
             }
         );
-    if (!reaction.emoji.id) {
-        embed.setFooter(
-            ` ${reaction.emoji.name} ${reaction.count} ${
-                reaction.emoji.name === DEFAULT_STARBOARD_EMOJI ? 'stars' : ''
-            }`
-        );
-    } else if (reaction.emoji.name && reaction.emoji.url) {
-        embed.setFooter(
-            `${reaction.count} ${reaction.emoji.name.toLowerCase()}`,
-            reaction.emoji.url
-        );
-    }
     const firstAttachment = message.attachments.first();
     if (firstAttachment) {
         embed.setImage(firstAttachment.url);
