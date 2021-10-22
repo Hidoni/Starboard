@@ -88,6 +88,14 @@ class Database {
             starCount: reaction.count,
         });
     }
+
+    public async getStarredMessagesInGuild(
+        guildId: Snowflake
+    ): Promise<StarredMessageInstance[]> {
+        return this.starredMessages.findAll({
+            where: { guildId: guildId },
+        });
+    }
 }
 
 export default Database;
