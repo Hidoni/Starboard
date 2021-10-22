@@ -9,6 +9,12 @@ export const handler: EventHandler = async (
 ) => {
     if (!thread.joined) {
         console.log(`Not in thread ${thread.name}`);
-        await thread.join();
+        thread
+            .join()
+            .catch((error) =>
+                client.logger?.debug(
+                    `Ignoring potential permission error while attempting to join thread in guild with ID ${thread.guildId}`
+                )
+            );
     }
 };
