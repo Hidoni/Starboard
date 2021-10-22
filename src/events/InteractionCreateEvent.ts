@@ -67,7 +67,7 @@ export const handler: EventHandler = async (
         }
     } else {
         client.logger?.debug(
-            `Ignoring unknown interaction: ${interaction.toJSON()}`
+            `Ignoring unknown interaction of type: ${interaction.type}`
         );
     }
 };
