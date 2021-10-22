@@ -51,18 +51,36 @@ export const handler: EventHandler = async (
                     client.logger?.error(
                         `Got the following error while executing ${interaction.commandName} command: ${error}`
                     );
-                    if (!interaction.replied) {
-                        interaction.reply({
-                            content:
-                                'An unknown error has occured and has been logged, please contact the developer to report this.',
-                            ephemeral: true,
-                        });
-                    }
+                    interaction.reply({
+                        content:
+                            'An unknown error has occured and has been logged, please contact the developer to report this.',
+                        ephemeral: true,
+                    });
                 });
             }
         } else {
             client.logger?.debug(
                 `Ignoring unknown command with name ${interaction.commandName}`
+            );
+        }
+    } else if (interaction.isMessageComponent()) {
+        const componentHandler = client.getComponentHandler(
+            interaction.customId
+        );
+        if (componentHandler) {
+            componentHandler.handler(client, interaction).catch((error) => {
+                client.logger?.error(
+                    `Got the following error while handling a component with id ${interaction.customId}: ${error}`
+                );
+                interaction.reply({
+                    content:
+                        'An unknown error has occured and has been logged, please contact the developer to report this.',
+                    ephemeral: true,
+                });
+            });
+        } else {
+            client.logger?.debug(
+                `Ignoring unknown component with ID ${interaction.customId}`
             );
         }
     } else {
