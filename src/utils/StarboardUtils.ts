@@ -33,13 +33,15 @@ export async function findStarboardChannelForTextChannel(
     }
     if (channel instanceof ThreadChannel) {
         if (channel.parent) {
-            return channel.parent.nsfw
-                ? config.nsfwChannelId
-                : config.sfwChannelId;
+            return findStarboardChannelForTextChannel(config, channel.parent, database);
         }
         return config.sfwChannelId;
     }
-    return channel.nsfw ? config.nsfwChannelId : config.sfwChannelId;
+    return channel.nsfw
+        ? config.nsfwChannelId
+            ? config.nsfwChannelId
+            : config.sfwChannelId
+        : config.sfwChannelId;
 }
 
 export async function generateStarboardEmbed(
