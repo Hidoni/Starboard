@@ -11,9 +11,12 @@ import {
     ThreadChannel,
     Guild,
     GuildEmoji,
+    MessageActionRow,
+    MessageButton,
 } from 'discord.js';
 import Database from '../database/DatabaseObject';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
+import { StarredMessageInstance } from '../interfaces/StarredMessages';
 
 const STARBOARD_EMBED_COLOR: readonly [number, number, number] = [255, 172, 51];
 const DEFAULT_STARBOARD_EMOJI: string = '⭐';
@@ -82,6 +85,76 @@ export async function generateStarboardEmbed(
         embed.setImage(firstAttachment.url);
     }
     return embed;
+}
+
+export function generateLeaderboardEmbed(
+    leaderboard: StarredMessageInstance[],
+    page: number
+): MessageEmbed {
+    const pageCount = Math.ceil(leaderboard.length / 10);
+    if (page <= 0) {
+        throw new Error('Leaderboard page number must be 1 or higher');
+    } else if (page > pageCount) {
+        throw new Error(
+            `Leaderboard page number exceeds amount of pages (${pageCount})`
+        );
+    }
+    const selectedUsers = leaderboard.slice((page - 1) * 10, page * 10);
+    const { 0: userRows, 1: starRows } = selectedUsers.reduce(
+        (strings, user, index) => [
+            strings[0] + `${index + 1}. <@${user.userId}>\n`,
+            strings[1] + `${user.starCount}\n`,
+        ],
+        ['', '']
+    );
+    return new MessageEmbed()
+        .setTitle('Leaderboards')
+        .setFooter(`Page ${page} out of ${pageCount}`)
+        .setColor(STARBOARD_EMBED_COLOR)
+        .addFields(
+            {
+                name: 'User',
+                value: userRows,
+                inline: true,
+            },
+            { name: 'Stars', value: starRows, inline: true }
+        );
+}
+
+export function generateLeaderboardComponentsRow(
+    leaderboard: StarredMessageInstance[],
+    page: number
+): MessageActionRow {
+    const pageCount = Math.ceil(leaderboard.length / 10);
+    if (page <= 0) {
+        throw new Error('Leaderboard page number must be 1 or higher');
+    } else if (page > pageCount) {
+        throw new Error(
+            `Leaderboard page number exceeds amount of pages (${pageCount})`
+        );
+    }
+    return new MessageActionRow().addComponents(
+        new MessageButton()
+            .setEmoji('⏮')
+            .setStyle('PRIMARY')
+            .setCustomId('leaderboard_0')
+            .setDisabled(page === 1),
+        new MessageButton()
+            .setEmoji('◀')
+            .setStyle('PRIMARY')
+            .setCustomId(`leaderboard_${page - 1}`)
+            .setDisabled(page === 1),
+        new MessageButton()
+            .setEmoji('▶')
+            .setStyle('PRIMARY')
+            .setCustomId(`leaderboard_${page + 1}`)
+            .setDisabled(page === pageCount),
+        new MessageButton()
+            .setEmoji('⏭')
+            .setStyle('PRIMARY')
+            .setCustomId('leaderboard_-1')
+            .setDisabled(page === pageCount)
+    );
 }
 
 export function hasPermissions(
