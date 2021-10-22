@@ -18,14 +18,14 @@ async function canRunCommand(
     command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>
 ): Promise<boolean> {
     if (command.guildOnly && !interaction.guild) {
-        await interaction.reply({
+        interaction.reply({
             content: 'This command can only be used in a server.',
             ephemeral: true,
         });
         return false;
     } else if (command.permissions) {
         if (!interaction.member) {
-            await interaction.reply({
+            interaction.reply({
                 content: 'An error has occured during handling of the command',
                 ephemeral: true,
             });
@@ -34,7 +34,7 @@ async function canRunCommand(
             );
             return false;
         } else if (!hasPermissions(interaction.member, command.permissions)) {
-            await interaction.reply({
+            interaction.reply({
                 content: `You must have the following permissions to use this command: ${command.permissions.join(
                     ', '
                 )}`,

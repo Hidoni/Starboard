@@ -72,14 +72,9 @@ async function starPublicMessage(
         reaction.message.id
     );
     if (starredMessage) {
-        await updateExistingStarredMessage(
-            config,
-            reaction,
-            client,
-            starredMessage
-        );
+        updateExistingStarredMessage(config, reaction, client, starredMessage);
     } else {
-        await createNewStarredMessage(reaction, config, client);
+        createNewStarredMessage(reaction, config, client);
     }
 }
 
@@ -98,11 +93,11 @@ async function updateExistingStarredMessage(
         let starboardMessage = await starboardChannel.messages.fetch(
             starredMessage.starboardMessageId
         );
-        await starboardMessage.edit({
+        starboardMessage.edit({
             embeds: [await generateStarboardEmbed(reaction)],
         });
     }
-    await starredMessage.update('starCount', reaction.count);
+    starredMessage.update('starCount', reaction.count);
     client.logger?.info(
         `Updated existing starred message for message with id ${starredMessage}, new star count is ${reaction.count}`
     );
@@ -122,7 +117,7 @@ async function createNewStarredMessage(
         let starboardMessage = await (
             starboardChannel as TextBasedChannels
         ).send({ embeds: [await generateStarboardEmbed(reaction)] });
-        await client.database.addNewStarredMessage(reaction, starboardMessage);
+        client.database.addNewStarredMessage(reaction, starboardMessage);
     }
 }
 
@@ -140,10 +135,16 @@ export const handler: EventHandler = async (
             await client.database.getGuildConfig(reaction.message.guildId);
         if (isStarEmoji(guildConfig, reaction.emoji)) {
             if (reaction.message.author == user) {
-                await reaction.users.remove(user);
+                reaction.users
+                    .remove(user)
+                    .catch((error) =>
+                        client.logger?.debug(
+                            `Ignoring potential permission error while attempting to remove reaction in guild with ID ${reaction.message.guildId}`
+                        )
+                    );
             } else {
                 if (reaction.count >= guildConfig.minimumReacts) {
-                    await starPublicMessage(client, guildConfig, reaction);
+                    starPublicMessage(client, guildConfig, reaction);
                 }
             }
         }

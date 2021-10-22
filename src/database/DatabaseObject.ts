@@ -43,7 +43,7 @@ class Database {
             where: { guildId: guildId },
         });
         if (!result) {
-            result = await this.guildConfig.create({ guildId: guildId });
+            return this.guildConfig.create({ guildId: guildId });
         }
         return result;
     }
@@ -51,7 +51,7 @@ class Database {
     public async getCustomChannel(
         channelId: Snowflake
     ): Promise<CustomChannelInstance | null> {
-        return await this.customChannels.findOne({
+        return this.customChannels.findOne({
             where: { channelId: channelId },
         });
     }
@@ -71,7 +71,7 @@ class Database {
     public async getStarredMessage(
         messageId: Snowflake
     ): Promise<StarredMessageInstance | null> {
-        return await this.starredMessages.findOne({
+        return this.starredMessages.findOne({
             where: { messageId: messageId },
         });
     }

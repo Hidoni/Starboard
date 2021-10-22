@@ -16,7 +16,7 @@ export const handler: CommandHandler = async (
     );
     const leaderboardEmbed = generateLeaderboardEmbed(userStars, 1);
     const pageControlRow = generateLeaderboardComponentsRow(userStars, 1);
-    await interaction.reply({
+    interaction.reply({
         embeds: [leaderboardEmbed],
         components: [pageControlRow],
     });

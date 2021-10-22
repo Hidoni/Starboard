@@ -184,7 +184,7 @@ export async function fetchEmoteFromGuild(
     id: Snowflake
 ): Promise<GuildEmoji | null> {
     try {
-        return await guild.emojis.fetch(id);
+        return guild.emojis.fetch(id);
     } catch (error) {
         return null;
     }

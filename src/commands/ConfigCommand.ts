@@ -31,7 +31,7 @@ interface ConfigCommandOptionHandler {
 async function sendUnknownCommandError(
     interaction: CommandInteraction
 ): Promise<void> {
-    await interaction.reply({
+    interaction.reply({
         content: 'Error: Unknown Command',
         ephemeral: true,
     });
@@ -52,12 +52,12 @@ async function handleCustomStarboardCommandGroup(
                 });
                 break;
             }
-            await client.database.addCustomChannel(
+            client.database.addCustomChannel(
                 target,
                 customStarboard,
                 interaction.guild!
             );
-            await interaction.reply({
+            interaction.reply({
                 content: `Succesfully added override from starred messages in ${target} to ${customStarboard}`,
                 ephemeral: true,
             });
@@ -71,16 +71,14 @@ async function handleCustomStarboardCommandGroup(
                 });
                 break;
             }
-            await (
-                await client.database.getCustomChannel(channel.id)
-            )?.destroy();
-            await interaction.reply({
+            (await client.database.getCustomChannel(channel.id))?.destroy();
+            interaction.reply({
                 content: `Succesfully removed override from starred messages in ${channel}`,
                 ephemeral: true,
             });
             break;
         default:
-            await sendUnknownCommandError(interaction);
+            sendUnknownCommandError(interaction);
             break;
     }
 }
@@ -165,7 +163,7 @@ async function handleServerConfigurationSubcommand(
         (argument) => argument.type === 'SUB_COMMAND'
     );
     if (!subCommand) {
-        await interaction.reply({
+        interaction.reply({
             content: 'Invalid command arguments',
             ephemeral: true,
         });
@@ -173,7 +171,7 @@ async function handleServerConfigurationSubcommand(
     }
     const args = subCommand.options;
     if (!args || args.length === 0) {
-        await interaction.reply({
+        interaction.reply({
             content: 'You must provide at least one configuration argument',
             ephemeral: true,
         });
@@ -188,12 +186,12 @@ async function handleServerConfigurationSubcommand(
                     if (!optionHandler) {
                         return `Unknown configuration option: ${option.name}`;
                     }
-                    return await optionHandler(interaction, guildConfig);
+                    return optionHandler(interaction, guildConfig);
                 })
             )
         ).join('\n');
-        await guildConfig.save();
-        await interaction.reply({ content: reply, ephemeral: true });
+        guildConfig.save();
+        interaction.reply({ content: reply, ephemeral: true });
     }
 }
 
@@ -204,10 +202,10 @@ async function handleDefaultCommandGroup(
     const subCommand = interaction.options.getSubcommand(false);
     switch (subCommand) {
         case 'server':
-            await handleServerConfigurationSubcommand(interaction, client);
+            handleServerConfigurationSubcommand(interaction, client);
             break;
         default:
-            await sendUnknownCommandError(interaction);
+            sendUnknownCommandError(interaction);
             break;
     }
 }
@@ -218,10 +216,10 @@ export const handler: CommandHandler = async (
 ) => {
     switch (interaction.options.getSubcommandGroup(false)) {
         case 'custom':
-            await handleCustomStarboardCommandGroup(client, interaction);
+            handleCustomStarboardCommandGroup(client, interaction);
             break;
         default:
-            await handleDefaultCommandGroup(client, interaction);
+            handleDefaultCommandGroup(client, interaction);
             break;
     }
 };

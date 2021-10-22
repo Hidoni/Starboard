@@ -13,7 +13,7 @@ async function updateMessageLeaderboard(
 ): Promise<void> {
     const embed = generateLeaderboardEmbed(userStars, page);
     const pageControlRow = generateLeaderboardComponentsRow(userStars, page);
-    await interaction.update({ embeds: [embed], components: [pageControlRow] });
+    interaction.update({ embeds: [embed], components: [pageControlRow] });
 }
 
 export const handler: ComponentHandlerFunction = async (
