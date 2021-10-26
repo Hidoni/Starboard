@@ -34,7 +34,11 @@ export async function findStarboardChannelForTextChannel(
     }
     if (channel instanceof ThreadChannel) {
         if (channel.parent) {
-            return findStarboardChannelForTextChannel(config, channel.parent, database);
+            return findStarboardChannelForTextChannel(
+                config,
+                channel.parent,
+                database
+            );
         }
         return config.sfwChannelId;
     }
@@ -65,9 +69,7 @@ export async function generateStarboardEmbed(
     return embed;
 }
 
-export function generateBasicStarboardEmbed(
-    message: Message
-): MessageEmbed {
+export function generateBasicStarboardEmbed(message: Message): MessageEmbed {
     let embed = new MessageEmbed()
         .setTitle('Content')
         .setDescription(message.content)
