@@ -69,7 +69,7 @@ export function generateBasicStarboardEmbed(
     message: Message
 ): MessageEmbed {
     let embed = new MessageEmbed()
-        .setTitle('content')
+        .setTitle('Content')
         .setDescription(message.content)
         .setColor(STARBOARD_EMBED_COLOR)
         .setTimestamp(message.createdTimestamp)
