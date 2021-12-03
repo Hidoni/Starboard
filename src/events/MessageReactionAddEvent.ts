@@ -90,12 +90,18 @@ async function updateExistingStarredMessage(
         client
     );
     if (starboardChannel) {
-        let starboardMessage = await starboardChannel.messages.fetch(
-            starredMessage.starboardMessageId
-        );
-        starboardMessage.edit({
-            embeds: [await generateStarboardEmbed(reaction)],
-        });
+        try {
+            let starboardMessage = await starboardChannel.messages.fetch(
+                starredMessage.starboardMessageId
+            );
+            starboardMessage.edit({
+                embeds: [await generateStarboardEmbed(reaction)],
+            });
+        } catch (e) {
+            client.logger?.debug(
+                `Could not fetch starboard message (id is ${starredMessage.starboardMessageId}), assuming intentional`
+            );
+        }
     }
     starredMessage.starCount = reaction.count;
     starredMessage.save();
@@ -145,7 +151,12 @@ export const handler: EventHandler = async (
                     );
             } else {
                 if (reaction.count >= guildConfig.minimumReacts) {
-                    starPublicMessage(client, guildConfig, reaction);
+                    starPublicMessage(client, guildConfig, reaction).catch(
+                        (error) =>
+                            client.logger?.debug(
+                                `Ignoring potential error while attempting to star message in guild with ID ${reaction.message.guildId} (error: ${error})`
+                            )
+                    );
                 }
             }
         }
