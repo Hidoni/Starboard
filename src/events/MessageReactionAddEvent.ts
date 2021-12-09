@@ -124,10 +124,20 @@ async function createNewStarredMessage(
         let starboardMessage = await (
             starboardChannel as TextBasedChannels
         ).send({ embeds: [await generateStarboardEmbed(reaction)] });
-        client.database.addNewStarredMessage(reaction, starboardMessage);
-        client.logger?.info(
-            `Created new starred message for message with id ${reaction.message.id}, star count is ${reaction.count}`
-        );
+        client.database
+            .addNewStarredMessage(reaction, starboardMessage)
+            .then(() => {
+                client.logger?.info(
+                    `Created new starred message for message with id ${reaction.message.id}, star count is ${reaction.count}`
+                );
+            })
+            .catch((e) => {
+                client.logger?.error(
+                    `Could not add new starred message for message with id ${reaction.message.id}`,
+                    e
+                );
+                starboardMessage.delete();
+            });
     }
 }
 
