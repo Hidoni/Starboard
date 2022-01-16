@@ -148,7 +148,14 @@ export const handler: EventHandler = async (
     user: User
 ) => {
     if (reaction.partial) {
-        reaction = await reaction.fetch();
+        try {
+            reaction = await reaction.fetch();
+        } catch (error) {
+            client.logger?.debug(
+                `Could not fetch partial reaction (id is ${reaction.message.id}), potential lack of permissions, assuming intentional (error: ${error})`
+            );
+            return;
+        }
     }
     if (reaction.message.guildId) {
         const guildConfig: GuildConfigInstance =
