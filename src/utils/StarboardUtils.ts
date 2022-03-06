@@ -112,9 +112,10 @@ export function generateLeaderboardEmbed(
         );
     }
     const selectedUsers = leaderboard.slice((page - 1) * 10, page * 10);
+    const startIndex = (page - 1) * 10 + 1;
     const { 0: userRows, 1: starRows } = selectedUsers.reduce(
         (strings, user, index) => [
-            strings[0] + `${index + 1}. <@${user.userId}>\n`,
+            strings[0] + `${index + startIndex}. <@${user.userId}>\n`,
             strings[1] + `${user.starCount}\n`,
         ],
         ['', '']
