@@ -9,12 +9,13 @@ import { StarredMessageInstance } from '../interfaces/StarredMessages';
 import { CustomChannelInstance } from '../interfaces/CustomChannels';
 import {
     Guild,
+    GuildBasedChannel,
     GuildChannel,
     Message,
     MessageReaction,
     Snowflake,
 } from 'discord.js';
-import { APIInteractionDataResolvedChannel } from 'discord.js/node_modules/discord-api-types';
+import { APIInteractionDataResolvedChannel } from 'discord.js/node_modules/discord-api-types/payloads/v9/_interactions/applicationCommands';
 class Database {
     private sequelize: Sequelize;
     private starredMessages: ModelCtor<StarredMessageInstance>;
@@ -57,8 +58,8 @@ class Database {
     }
 
     public async addCustomChannel(
-        channel: GuildChannel | APIInteractionDataResolvedChannel,
-        starboard: GuildChannel | APIInteractionDataResolvedChannel,
+        channel: GuildBasedChannel | APIInteractionDataResolvedChannel,
+        starboard: GuildBasedChannel | APIInteractionDataResolvedChannel,
         guild: Guild
     ): Promise<CustomChannelInstance> {
         return this.customChannels.create({

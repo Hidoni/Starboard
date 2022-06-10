@@ -1,4 +1,4 @@
-import { APIInteractionGuildMember } from 'discord.js/node_modules/discord-api-types';
+import { APIInteractionGuildMember } from 'discord.js/node_modules/discord-api-types/payloads/v9/_interactions/base';
 import {
     GuildMember,
     MessageEmbed,

@@ -14,7 +14,7 @@ import { hasPermissions } from '../utils/StarboardUtils';
 
 async function canRunCommand(
     client: Bot,
-    interaction: CommandInteraction,
+    interaction: CommandInteraction | ContextMenuInteraction,
     command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>
 ): Promise<boolean> {
     if (command.guildOnly && !interaction.guild) {

@@ -3,9 +3,8 @@ import {
     MessageReaction,
     PartialMessageReaction,
     ReactionEmoji,
+    TextBasedChannel,
     User,
-    TextBasedChannels,
-    BaseGuildTextChannel,
 } from 'discord.js';
 import { Bot } from '../client/Client';
 import { EventHandler } from '../interfaces/Event';
@@ -36,10 +35,10 @@ function isStarEmoji(
 
 async function getStarboardChannelFromChannel(
     config: GuildConfigInstance,
-    channel: TextBasedChannels,
+    channel: TextBasedChannel,
     client: Bot
-): Promise<TextBasedChannels | null> {
-    if (channel.type === 'DM') {
+): Promise<TextBasedChannel | null> {
+    if (channel.type === 'DM' || channel.type == 'GUILD_VOICE') {
         throw new Error('Invalid channel for starred message');
     }
     const channelId = await findStarboardChannelForTextChannel(
@@ -60,7 +59,7 @@ async function getStarboardChannelFromChannel(
         );
         return null;
     }
-    return starboardChannel as TextBasedChannels;
+    return starboardChannel as TextBasedChannel;
 }
 
 async function starPublicMessage(
@@ -122,7 +121,7 @@ async function createNewStarredMessage(
     );
     if (starboardChannel) {
         let starboardMessage = await (
-            starboardChannel as TextBasedChannels
+            starboardChannel as TextBasedChannel
         ).send({ embeds: [await generateStarboardEmbed(reaction)] });
         client.database
             .addNewStarredMessage(reaction, starboardMessage)
