@@ -38,7 +38,7 @@ async function getStarboardChannelFromChannel(
     channel: TextBasedChannel,
     client: Bot
 ): Promise<TextBasedChannel | null> {
-    if (channel.type === 'DM' || channel.type == 'GUILD_VOICE') {
+    if (channel.type === 'DM' || channel.type == 'GUILD_VOICE' || channel.type == "GUILD_STAGE_VOICE") {
         throw new Error('Invalid channel for starred message');
     }
     const channelId = await findStarboardChannelForTextChannel(

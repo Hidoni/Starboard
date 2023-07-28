@@ -9,6 +9,7 @@ import {
     Snowflake,
     TextChannel,
     ThreadChannel,
+    ForumChannel,
     Guild,
     GuildEmoji,
     MessageActionRow,
@@ -21,7 +22,7 @@ import { StarredMessageInstance } from '../interfaces/StarredMessages';
 
 const STARBOARD_EMBED_COLOR: readonly [number, number, number] = [255, 172, 51];
 const DEFAULT_STARBOARD_EMOJI: string = '⭐';
-type StarrableChannel = TextChannel | NewsChannel | ThreadChannel;
+type StarrableChannel = TextChannel | NewsChannel | ThreadChannel | ForumChannel;
 
 export async function findStarboardChannelForTextChannel(
     config: GuildConfigInstance,
