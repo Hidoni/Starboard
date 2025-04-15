@@ -8,14 +8,13 @@ import { GuildConfigInstance } from '../interfaces/GuildConfig';
 import { StarredMessageInstance } from '../interfaces/StarredMessages';
 import { CustomChannelInstance } from '../interfaces/CustomChannels';
 import {
+    APIInteractionDataResolvedChannel,
     Guild,
     GuildBasedChannel,
-    GuildChannel,
     Message,
     MessageReaction,
     Snowflake,
 } from 'discord.js';
-import { APIInteractionDataResolvedChannel } from 'discord.js/node_modules/discord-api-types/payloads/v9/_interactions/applicationCommands';
 class Database {
     private sequelize: Sequelize;
     private starredMessages: ModelCtor<StarredMessageInstance>;
