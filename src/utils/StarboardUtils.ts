@@ -81,7 +81,9 @@ function getMessageContent(message: Message | MessageSnapshot): string {
     return message.content;
 }
 
-function getAttachmentUrl(message: Message | MessageSnapshot): string | undefined {
+function getAttachmentUrl(
+    message: Message | MessageSnapshot,
+): string | undefined {
     const messageAttachment = message.attachments.first();
     if (messageAttachment) {
         return messageAttachment.url;
@@ -90,10 +92,16 @@ function getAttachmentUrl(message: Message | MessageSnapshot): string | undefine
     if (embed && embed.image) {
         return embed.image.url;
     }
+    const sticker = message.stickers.first();
+    if (sticker) {
+        return sticker.url;
+    }
 }
 
-function getThumbnailUrl(message: Message | MessageSnapshot): string | undefined {
-    const embed = message.embeds[0]
+function getThumbnailUrl(
+    message: Message | MessageSnapshot,
+): string | undefined {
+    const embed = message.embeds[0];
     if (embed && embed.thumbnail) {
         return embed.thumbnail.url;
     }
@@ -125,7 +133,8 @@ export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
     if (content) {
         embed.setTitle('Content').setDescription(content);
     }
-    const attachmentUrl = getAttachmentUrl(embeddedMessage) ?? getThumbnailUrl(embeddedMessage);
+    const attachmentUrl =
+        getAttachmentUrl(embeddedMessage) ?? getThumbnailUrl(embeddedMessage);
     if (attachmentUrl) {
         embed.setImage(attachmentUrl);
     }
