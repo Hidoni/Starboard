@@ -71,8 +71,6 @@ export async function generateStarboardEmbed(
 
 export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
     let embed = new EmbedBuilder()
-        .setTitle('Content')
-        .setDescription(message.content)
         .setColor(STARBOARD_EMBED_COLOR)
         .setTimestamp(message.createdTimestamp)
         .setAuthor({
@@ -92,6 +90,9 @@ export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
                 inline: false,
             },
         );
+    if (message.content) {
+        embed.setTitle('Content').setDescription(message.content);
+    }
     const firstAttachment = message.attachments.first();
     if (firstAttachment) {
         embed.setImage(firstAttachment.url);
