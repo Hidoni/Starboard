@@ -4,7 +4,7 @@ import { DatabaseModelInitializer } from '../../interfaces/DatabaseModel';
 import { GuildConfigInstance } from '../../interfaces/GuildConfig';
 
 export const initialize: DatabaseModelInitializer<GuildConfigInstance> = (
-    sequelize: Sequelize
+    sequelize: Sequelize,
 ) => {
     return sequelize.define(
         'guild_config',
@@ -38,6 +38,6 @@ export const initialize: DatabaseModelInitializer<GuildConfigInstance> = (
         },
         {
             timestamps: false,
-        }
+        },
     );
 };

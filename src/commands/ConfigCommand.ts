@@ -1,4 +1,14 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionResolvable, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandNumberOption, SlashCommandStringOption, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js';
+import {
+    ApplicationCommandOptionType,
+    ChatInputCommandInteraction,
+    PermissionResolvable,
+    SlashCommandBuilder,
+    SlashCommandChannelOption,
+    SlashCommandNumberOption,
+    SlashCommandStringOption,
+    SlashCommandSubcommandBuilder,
+    SlashCommandSubcommandGroupBuilder,
+} from 'discord.js';
 import { Bot } from '../client/Client';
 import { ChatInputCommandHandler } from '../interfaces/Command';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
@@ -16,12 +26,12 @@ const CONFIG_OPTION_MAP: Map<string, ConfigCommandOptionHandler> = new Map([
 interface ConfigCommandOptionHandler {
     (
         interaction: ChatInputCommandInteraction,
-        config: GuildConfigInstance
+        config: GuildConfigInstance,
     ): Promise<string>;
 }
 
 async function sendUnknownCommandError(
-    interaction: ChatInputCommandInteraction
+    interaction: ChatInputCommandInteraction,
 ): Promise<void> {
     interaction.reply({
         content: 'Error: Unknown Command',
@@ -31,7 +41,7 @@ async function sendUnknownCommandError(
 
 async function handleCustomStarboardCommandGroup(
     client: Bot,
-    interaction: ChatInputCommandInteraction
+    interaction: ChatInputCommandInteraction,
 ): Promise<void> {
     switch (interaction.options.getSubcommand(false)) {
         case 'add':
@@ -47,7 +57,7 @@ async function handleCustomStarboardCommandGroup(
             client.database.addCustomChannel(
                 target,
                 customStarboard,
-                interaction.guild!
+                interaction.guild!,
             );
             interaction.reply({
                 content: `Succesfully added override from starred messages in ${target} to ${customStarboard}`,
@@ -77,7 +87,7 @@ async function handleCustomStarboardCommandGroup(
 
 async function modifyStarboardEmote(
     interaction: ChatInputCommandInteraction,
-    config: GuildConfigInstance
+    config: GuildConfigInstance,
 ): Promise<string> {
     const emote = interaction.options.getString('emote', false);
     if (!emote) {
@@ -98,7 +108,7 @@ async function modifyStarboardEmote(
     }
     const guildEmoji = await fetchEmoteFromGuild(
         interaction.guild!,
-        emoteMatch[1]
+        emoteMatch[1],
     );
     if (!guildEmoji) {
         return 'Emote argument must be an emote from this server or a default one';
@@ -110,7 +120,7 @@ async function modifyStarboardEmote(
 
 async function modifyStarboardMinimum(
     interaction: ChatInputCommandInteraction,
-    config: GuildConfigInstance
+    config: GuildConfigInstance,
 ): Promise<string> {
     const minimum = interaction.options.getNumber('minimum', false);
     if (!minimum) {
@@ -125,7 +135,7 @@ async function modifyStarboardMinimum(
 
 async function modifyStarboardSFW(
     interaction: ChatInputCommandInteraction,
-    config: GuildConfigInstance
+    config: GuildConfigInstance,
 ): Promise<string> {
     const sfw = interaction.options.getChannel('sfw', false);
     if (!sfw) {
@@ -137,7 +147,7 @@ async function modifyStarboardSFW(
 
 async function modifyStarboardNSFW(
     interaction: ChatInputCommandInteraction,
-    config: GuildConfigInstance
+    config: GuildConfigInstance,
 ): Promise<string> {
     const sfw = interaction.options.getChannel('nsfw', false);
     if (!sfw) {
@@ -149,10 +159,10 @@ async function modifyStarboardNSFW(
 
 async function handleServerConfigurationSubcommand(
     interaction: ChatInputCommandInteraction,
-    client: Bot
+    client: Bot,
 ): Promise<void> {
     const subCommand = interaction.options.data.find(
-        (argument) => argument.type === ApplicationCommandOptionType.Subcommand
+        (argument) => argument.type === ApplicationCommandOptionType.Subcommand,
     );
     if (!subCommand) {
         interaction.reply({
@@ -169,7 +179,7 @@ async function handleServerConfigurationSubcommand(
         });
     } else {
         let guildConfig = await client.database.getGuildConfig(
-            interaction.guildId!
+            interaction.guildId!,
         );
         const reply = (
             await Promise.all(
@@ -179,7 +189,7 @@ async function handleServerConfigurationSubcommand(
                         return `Unknown configuration option: ${option.name}`;
                     }
                     return optionHandler(interaction, guildConfig);
-                })
+                }),
             )
         ).join('\n');
         guildConfig.save();
@@ -189,7 +199,7 @@ async function handleServerConfigurationSubcommand(
 
 async function handleDefaultCommandGroup(
     client: Bot,
-    interaction: ChatInputCommandInteraction
+    interaction: ChatInputCommandInteraction,
 ): Promise<void> {
     const subCommand = interaction.options.getSubcommand(false);
     switch (subCommand) {
@@ -204,7 +214,7 @@ async function handleDefaultCommandGroup(
 
 export const handler: ChatInputCommandHandler = async (
     client: Bot,
-    interaction: ChatInputCommandInteraction
+    interaction: ChatInputCommandInteraction,
 ) => {
     switch (interaction.options.getSubcommandGroup(false)) {
         case 'custom':
@@ -226,36 +236,36 @@ export const builder = new SlashCommandBuilder()
                 new SlashCommandStringOption()
                     .setName('emote')
                     .setDescription(
-                        'The emote users will use to star messages with Starboard'
-                    )
+                        'The emote users will use to star messages with Starboard',
+                    ),
             )
             .addNumberOption(
                 new SlashCommandNumberOption()
                     .setName('minimum')
                     .setDescription(
-                        'The minimum reactions required to put a message on the Starboard'
-                    )
+                        'The minimum reactions required to put a message on the Starboard',
+                    ),
             )
             .addChannelOption(
                 new SlashCommandChannelOption()
                     .setName('sfw')
                     .setDescription(
-                        'The default channel all starred SFW messages will be posted to'
-                    )
+                        'The default channel all starred SFW messages will be posted to',
+                    ),
             )
             .addChannelOption(
                 new SlashCommandChannelOption()
                     .setName('nsfw')
                     .setDescription(
-                        'The default channel all starred NSFW messages will be posted to'
-                    )
-            )
+                        'The default channel all starred NSFW messages will be posted to',
+                    ),
+            ),
     )
     .addSubcommandGroup(
         new SlashCommandSubcommandGroupBuilder()
             .setName('custom')
             .setDescription(
-                'Add/Remove custom Starboard channels, besides the default SFW/NSFW ones'
+                'Add/Remove custom Starboard channels, besides the default SFW/NSFW ones',
             )
             .addSubcommand(
                 new SlashCommandSubcommandBuilder()
@@ -265,34 +275,34 @@ export const builder = new SlashCommandBuilder()
                         new SlashCommandChannelOption()
                             .setName('starboard')
                             .setDescription(
-                                'The channel to which to post starred messages'
+                                'The channel to which to post starred messages',
                             )
-                            .setRequired(true)
+                            .setRequired(true),
                     )
                     .addChannelOption(
                         new SlashCommandChannelOption()
                             .setName('target')
                             .setDescription(
-                                'The channel whose starred messages will be posted to the custom starboard'
+                                'The channel whose starred messages will be posted to the custom starboard',
                             )
-                            .setRequired(true)
-                    )
+                            .setRequired(true),
+                    ),
             )
             .addSubcommand(
                 new SlashCommandSubcommandBuilder()
                     .setName('remove')
                     .setDescription(
-                        'Remove a custom Starboard channel override'
+                        'Remove a custom Starboard channel override',
                     )
                     .addChannelOption(
                         new SlashCommandChannelOption()
                             .setName('channel')
                             .setDescription(
-                                'The channel whose custom starboard override to remove'
+                                'The channel whose custom starboard override to remove',
                             )
-                            .setRequired(true)
-                    )
-            )
+                            .setRequired(true),
+                    ),
+            ),
     );
 export const guildOnly: boolean = true;
 export const permissions: PermissionResolvable[] = [

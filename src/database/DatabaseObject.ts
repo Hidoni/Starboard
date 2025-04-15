@@ -38,7 +38,7 @@ class Database {
     }
 
     public async getGuildConfig(
-        guildId: Snowflake
+        guildId: Snowflake,
     ): Promise<GuildConfigInstance> {
         let result = await this.guildConfig.findOne({
             where: { guildId: guildId },
@@ -50,7 +50,7 @@ class Database {
     }
 
     public async getCustomChannel(
-        channelId: Snowflake
+        channelId: Snowflake,
     ): Promise<CustomChannelInstance | null> {
         return this.customChannels.findOne({
             where: { channelId: channelId },
@@ -60,7 +60,7 @@ class Database {
     public async addCustomChannel(
         channel: GuildBasedChannel | APIInteractionDataResolvedChannel,
         starboard: GuildBasedChannel | APIInteractionDataResolvedChannel,
-        guild: Guild
+        guild: Guild,
     ): Promise<CustomChannelInstance> {
         return this.customChannels.create({
             channelId: channel.id,
@@ -70,7 +70,7 @@ class Database {
     }
 
     public async getStarredMessage(
-        messageId: Snowflake
+        messageId: Snowflake,
     ): Promise<StarredMessageInstance | null> {
         return this.starredMessages.findOne({
             where: { messageId: messageId },
@@ -79,7 +79,7 @@ class Database {
 
     public async addNewStarredMessage(
         reaction: MessageReaction,
-        starboardMessage: Message
+        starboardMessage: Message,
     ): Promise<StarredMessageInstance> {
         return this.starredMessages.create({
             messageId: reaction.message.id,
@@ -91,7 +91,7 @@ class Database {
     }
 
     public async getStarredMessagesInGuild(
-        guildId: Snowflake
+        guildId: Snowflake,
     ): Promise<StarredMessageInstance[]> {
         return this.starredMessages.findAll({
             where: { guildId: guildId },

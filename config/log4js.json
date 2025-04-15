@@ -9,6 +9,6 @@
         }
     },
     "categories": {
-        "default": {"appenders": ["file", "out"], "level": "DEBUG"}
+        "default": { "appenders": ["file", "out"], "level": "DEBUG" }
     }
 }

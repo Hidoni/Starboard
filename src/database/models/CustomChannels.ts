@@ -4,7 +4,7 @@ import { DatabaseModelInitializer } from '../../interfaces/DatabaseModel';
 import { CustomChannelInstance } from '../../interfaces/CustomChannels';
 
 export const initialize: DatabaseModelInitializer<CustomChannelInstance> = (
-    sequelize: Sequelize
+    sequelize: Sequelize,
 ) => {
     return sequelize.define(
         'custom_starboard_channels',
@@ -25,7 +25,7 @@ export const initialize: DatabaseModelInitializer<CustomChannelInstance> = (
         },
         {
             timestamps: false,
-            indexes: [{fields: ['guildId']}]
-        }
+            indexes: [{ fields: ['guildId'] }],
+        },
     );
 };

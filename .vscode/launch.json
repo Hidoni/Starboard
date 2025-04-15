@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Launch Bot",
             "preLaunchTask": "tsc: build - tsconfig.json",
@@ -15,7 +15,7 @@
             "smartStep": true
         },
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Init Database",
             "preLaunchTask": "tsc: build - tsconfig.json",
@@ -28,7 +28,7 @@
             "smartStep": true
         },
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Import JSON to Database",
             "preLaunchTask": "tsc: build - tsconfig.json",

@@ -55,7 +55,7 @@ class Bot extends Client {
                     this.commands.set(handler.builder.name, handler);
                 } catch (error) {
                     this.logger?.error(
-                        `Failed to load command at ${file}: ${error}`
+                        `Failed to load command at ${file}: ${error}`,
                     );
                 }
             });
@@ -72,7 +72,7 @@ class Bot extends Client {
                     this.registerEvent(handler.name, handler);
                 } catch (error) {
                     this.logger?.error(
-                        `Failed to load event at ${file}: ${error}`
+                        `Failed to load event at ${file}: ${error}`,
                     );
                 }
             });
@@ -89,12 +89,12 @@ class Bot extends Client {
                     this.componentHandlers.set(handler.pattern, handler);
                 } catch (error) {
                     this.logger?.error(
-                        `Failed to load component handler at ${file}: ${error}`
+                        `Failed to load component handler at ${file}: ${error}`,
                     );
                 }
             });
             this.logger?.info(
-                `Succesfully registered ${this.componentHandlers.size} component handlers`
+                `Succesfully registered ${this.componentHandlers.size} component handlers`,
             );
         } catch (error) {
             this.logger?.error(`Failed to load component handlers: ${error}`);
@@ -102,13 +102,13 @@ class Bot extends Client {
     }
 
     public getCommand(
-        commandName: string
+        commandName: string,
     ): Command<SlashCommandBuilder | ContextMenuCommandBuilder> | undefined {
         return this.commands.get(commandName);
     }
 
     public getComponentHandler(
-        componentId: string
+        componentId: string,
     ): ComponentHandler | undefined {
         for (const { 0: idPattern, 1: componentHandler } of this
             .componentHandlers) {
@@ -130,7 +130,7 @@ class Bot extends Client {
                 .handler(bot, ...Array.from(arguments).slice(1))
                 .catch((error) => {
                     bot.logger?.error(
-                        `Failed to execute event ${eventName}: ${error}`
+                        `Failed to execute event ${eventName}: ${error}`,
                     );
                 });
         }.bind(null, this);
@@ -140,7 +140,7 @@ class Bot extends Client {
             this.on(eventName, wrapper);
         }
         this.logger?.info(
-            `Registered event ${eventName} (once=${!!event.once})`
+            `Registered event ${eventName} (once=${!!event.once})`,
         );
     }
 
@@ -148,16 +148,16 @@ class Bot extends Client {
         let route = this.config.debugGuildId
             ? Routes.applicationGuildCommands(
                   this.config.appId,
-                  this.config.debugGuildId
+                  this.config.debugGuildId,
               )
             : Routes.applicationCommands(this.config.appId);
         try {
             const commandsJSON = this.commands.map((command) =>
-                command.builder.toJSON()
+                command.builder.toJSON(),
             );
             await this.restAPI.put(route, { body: commandsJSON });
             this.logger?.info(
-                `Succesfully registered ${commandsJSON.length} commands`
+                `Succesfully registered ${commandsJSON.length} commands`,
             );
         } catch (error) {
             this.logger?.error(`Error loading commands: ${error}`);

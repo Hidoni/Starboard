@@ -34,7 +34,7 @@ const bot = new Bot(
         componentHandlersFolder: path.join(__dirname, 'component_handlers/'),
         partials: [Partials.Reaction, Partials.Message],
     },
-    logger
+    logger,
 );
 
 logger.info('Starting bot');

@@ -53,10 +53,10 @@ if (process.env.DATABASE_PATH) {
             starredMessages.create({
                 messageId: messageId,
                 guildId: guildId,
-                userId: starred[guildId][messageId]["author"],
-                starboardMessageId: starred[guildId][messageId]["id"],
-                starCount: starred[guildId][messageId]["stars"]
-            })
+                userId: starred[guildId][messageId]['author'],
+                starboardMessageId: starred[guildId][messageId]['id'],
+                starCount: starred[guildId][messageId]['stars'],
+            });
         }
     }
     db.sync();

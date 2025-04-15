@@ -15,7 +15,7 @@ import { hasPermissions } from '../utils/StarboardUtils';
 async function canRunCommand(
     client: Bot,
     interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
-    command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>
+    command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>,
 ): Promise<boolean> {
     if (command.guildOnly && !interaction.guild) {
         interaction.reply({
@@ -30,13 +30,13 @@ async function canRunCommand(
                 ephemeral: true,
             });
             client.logger?.error(
-                `member field was null, could not perform required permission check in command ${interaction.commandName}`
+                `member field was null, could not perform required permission check in command ${interaction.commandName}`,
             );
             return false;
         } else if (!hasPermissions(interaction.member, command.permissions)) {
             interaction.reply({
                 content: `You must have the following permissions to use this command: ${command.permissions.join(
-                    ', '
+                    ', ',
                 )}`,
                 ephemeral: true,
             });
@@ -49,7 +49,7 @@ async function canRunCommand(
 function handleCommandCall(
     command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>,
     client: Bot,
-    interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction
+    interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
 ): void {
     if (
         (interaction.commandType === ApplicationCommandType.Message ||
@@ -58,7 +58,7 @@ function handleCommandCall(
     ) {
         (command as Command<ContextMenuCommandBuilder>).handler(
             client,
-            interaction
+            interaction,
         );
     } else if (
         interaction.commandType === ApplicationCommandType.ChatInput &&
@@ -67,7 +67,7 @@ function handleCommandCall(
         (command as Command<SlashCommandBuilder>).handler(client, interaction);
     } else {
         throw new Error(
-            `Mismatch between interaction type and command type in command ${command.builder.name}`
+            `Mismatch between interaction type and command type in command ${command.builder.name}`,
         );
     }
 }
@@ -75,7 +75,7 @@ function handleCommandCall(
 export const name: string = 'interactionCreate';
 export const handler: EventHandler = async (
     client: Bot,
-    interaction: Interaction
+    interaction: Interaction,
 ) => {
     if (interaction.isCommand()) {
         const command = client.getCommand(interaction.commandName);
@@ -85,7 +85,7 @@ export const handler: EventHandler = async (
                     handleCommandCall(command, client, interaction);
                 } catch (error) {
                     client.logger?.error(
-                        `Got the following error while executing ${interaction.commandName} command: ${error}`
+                        `Got the following error while executing ${interaction.commandName} command: ${error}`,
                     );
                     const replyFunction = interaction.replied
                         ? interaction.followUp.bind(interaction)
@@ -99,17 +99,17 @@ export const handler: EventHandler = async (
             }
         } else {
             client.logger?.debug(
-                `Ignoring unknown command with name ${interaction.commandName}`
+                `Ignoring unknown command with name ${interaction.commandName}`,
             );
         }
     } else if (interaction.isMessageComponent()) {
         const componentHandler = client.getComponentHandler(
-            interaction.customId
+            interaction.customId,
         );
         if (componentHandler) {
             componentHandler.handler(client, interaction).catch((error) => {
                 client.logger?.error(
-                    `Got the following error while handling a component with id ${interaction.customId}: ${error}`
+                    `Got the following error while handling a component with id ${interaction.customId}: ${error}`,
                 );
                 const replyFunction = interaction.replied
                     ? interaction.followUp.bind(interaction)
@@ -122,12 +122,12 @@ export const handler: EventHandler = async (
             });
         } else {
             client.logger?.debug(
-                `Ignoring unknown component with ID ${interaction.customId}`
+                `Ignoring unknown component with ID ${interaction.customId}`,
             );
         }
     } else {
         client.logger?.debug(
-            `Ignoring unknown interaction of type: ${interaction.type}`
+            `Ignoring unknown interaction of type: ${interaction.type}`,
         );
     }
 };

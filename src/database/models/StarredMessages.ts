@@ -4,7 +4,7 @@ import { DatabaseModelInitializer } from '../../interfaces/DatabaseModel';
 import { StarredMessageInstance } from '../../interfaces/StarredMessages';
 
 export const initialize: DatabaseModelInitializer<StarredMessageInstance> = (
-    sequelize: Sequelize
+    sequelize: Sequelize,
 ) => {
     return sequelize.define(
         'starred_messages',
@@ -37,6 +37,6 @@ export const initialize: DatabaseModelInitializer<StarredMessageInstance> = (
                     fields: ['guildId', 'userId'],
                 },
             ],
-        }
+        },
     );
 };

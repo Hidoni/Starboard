@@ -8,10 +8,10 @@ import {
 
 export const handler: ChatInputCommandHandler = async (
     client: Bot,
-    interaction: ChatInputCommandInteraction
+    interaction: ChatInputCommandInteraction,
 ) => {
     const userStars = await client.database.getStarredMessagesInGuildByUsers(
-        interaction.guildId!
+        interaction.guildId!,
     );
     const leaderboardEmbed = generateLeaderboardEmbed(userStars, 1);
     const pageControlRow = generateLeaderboardComponentsRow(userStars, 1);

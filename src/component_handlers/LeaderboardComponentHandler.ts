@@ -9,7 +9,7 @@ import {
 async function updateMessageLeaderboard(
     userStars: StarredMessageInstance[],
     page: number,
-    interaction: MessageComponentInteraction
+    interaction: MessageComponentInteraction,
 ): Promise<void> {
     const embed = generateLeaderboardEmbed(userStars, page);
     const pageControlRow = generateLeaderboardComponentsRow(userStars, page);
@@ -18,10 +18,10 @@ async function updateMessageLeaderboard(
 
 export const handler: ComponentHandlerFunction = async (
     client,
-    interaction
+    interaction,
 ) => {
     const userStars = await client.database.getStarredMessagesInGuildByUsers(
-        interaction.guildId!
+        interaction.guildId!,
     );
     const page = interaction.customId.match(pattern)![1];
     switch (page) {
@@ -32,14 +32,14 @@ export const handler: ComponentHandlerFunction = async (
             updateMessageLeaderboard(
                 userStars,
                 Math.ceil(userStars.length / 10),
-                interaction
+                interaction,
             );
             break;
         default:
             updateMessageLeaderboard(
                 userStars,
                 Number.parseInt(page),
-                interaction
+                interaction,
             );
             break;
     }

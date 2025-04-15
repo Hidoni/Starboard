@@ -1,4 +1,6 @@
-import {    Channel, ChannelType,
+import {
+    Channel,
+    ChannelType,
     Emoji,
     GuildTextBasedChannel,
     MessageReaction,
@@ -20,17 +22,16 @@ const VALID_STARBOARD_CHANNEL_TYPES = [
     ChannelType.GuildAnnouncement,
     ChannelType.AnnouncementThread,
     ChannelType.PublicThread,
-    ChannelType.PrivateThread
+    ChannelType.PrivateThread,
 ];
 
-function isGuildTextBasedChannel(channel: TextBasedChannel): channel is GuildTextBasedChannel {
-    return 'guildId' in channel
+function isGuildTextBasedChannel(
+    channel: TextBasedChannel,
+): channel is GuildTextBasedChannel {
+    return 'guildId' in channel;
 }
 
-function isStarEmoji(
-    guildConfig: GuildConfigInstance,
-    emoji: Emoji
-) {
+function isStarEmoji(guildConfig: GuildConfigInstance, emoji: Emoji) {
     if (!emoji.id && guildConfig.isUnicode) {
         return guildConfig.emoji === emoji.name;
     }
@@ -40,23 +41,23 @@ function isStarEmoji(
 async function getStarboardChannelFromChannel(
     config: GuildConfigInstance,
     channel: GuildTextBasedChannel,
-    client: Bot
+    client: Bot,
 ): Promise<GuildTextBasedChannel | null> {
     const channelId = await findStarboardChannelForTextChannel(
         config,
         channel,
-        client.database
+        client.database,
     );
     const starboardChannel = channelId
         ? await client.channels.fetch(channelId)
         : null;
     if (!starboardChannel) {
         client.logger?.debug(
-            `Starboard channel could not be fetched (id is ${channelId}), assuming intentional`
+            `Starboard channel could not be fetched (id is ${channelId}), assuming intentional`,
         );
     } else if (!VALID_STARBOARD_CHANNEL_TYPES.includes(starboardChannel.type)) {
         client.logger?.debug(
-            `Misconfigured starboard channel (id is ${channelId}) isn't text-based`
+            `Misconfigured starboard channel (id is ${channelId}) isn't text-based`,
         );
     }
     return starboardChannel as GuildTextBasedChannel;
@@ -65,10 +66,10 @@ async function getStarboardChannelFromChannel(
 async function starPublicMessage(
     client: Bot,
     config: GuildConfigInstance,
-    reaction: MessageReaction
+    reaction: MessageReaction,
 ) {
     const starredMessage = await client.database.getStarredMessage(
-        reaction.message.id
+        reaction.message.id,
     );
     if (starredMessage) {
         updateExistingStarredMessage(config, reaction, client, starredMessage);
@@ -81,7 +82,7 @@ async function updateExistingStarredMessage(
     config: GuildConfigInstance,
     reaction: MessageReaction,
     client: Bot,
-    starredMessage: StarredMessageInstance
+    starredMessage: StarredMessageInstance,
 ) {
     if (!isGuildTextBasedChannel(reaction.message.channel)) {
         return;
@@ -89,33 +90,33 @@ async function updateExistingStarredMessage(
     const starboardChannel = await getStarboardChannelFromChannel(
         config,
         reaction.message.channel,
-        client
+        client,
     );
     if (starboardChannel) {
         try {
             let starboardMessage = await starboardChannel.messages.fetch(
-                starredMessage.starboardMessageId
+                starredMessage.starboardMessageId,
             );
             starboardMessage.edit({
                 embeds: [await generateStarboardEmbed(reaction)],
             });
         } catch (e) {
             client.logger?.debug(
-                `Could not fetch starboard message (id is ${starredMessage.starboardMessageId}), assuming intentional`
+                `Could not fetch starboard message (id is ${starredMessage.starboardMessageId}), assuming intentional`,
             );
         }
     }
     starredMessage.starCount = reaction.count;
     starredMessage.save();
     client.logger?.info(
-        `Updated existing starred message for message with id ${starredMessage.messageId}, new star count is ${reaction.count}`
+        `Updated existing starred message for message with id ${starredMessage.messageId}, new star count is ${reaction.count}`,
     );
 }
 
 async function createNewStarredMessage(
     reaction: MessageReaction,
     config: GuildConfigInstance,
-    client: Bot
+    client: Bot,
 ) {
     if (!isGuildTextBasedChannel(reaction.message.channel)) {
         return;
@@ -123,13 +124,14 @@ async function createNewStarredMessage(
     const starboardChannel = await getStarboardChannelFromChannel(
         config,
         reaction.message.channel,
-        client
+        client,
     );
     if (starboardChannel) {
-        let starboardMessage = await starboardChannel.send({ embeds: [await generateStarboardEmbed(reaction)] })
+        let starboardMessage = await starboardChannel
+            .send({ embeds: [await generateStarboardEmbed(reaction)] })
             .catch((error) => {
                 client.logger?.error(
-                    `Could not send message in starboard channel (error: ${error})`
+                    `Could not send message in starboard channel (error: ${error})`,
                 );
                 return null;
             });
@@ -140,13 +142,13 @@ async function createNewStarredMessage(
             .addNewStarredMessage(reaction, starboardMessage)
             .then(() => {
                 client.logger?.info(
-                    `Created new starred message for message with id ${reaction.message.id}, star count is ${reaction.count}`
+                    `Created new starred message for message with id ${reaction.message.id}, star count is ${reaction.count}`,
                 );
             })
             .catch((e) => {
                 client.logger?.error(
                     `Could not add new starred message for message with id ${reaction.message.id}`,
-                    e
+                    e,
                 );
                 starboardMessage!.delete();
             });
@@ -157,14 +159,14 @@ export const name: string = 'messageReactionAdd';
 export const handler: EventHandler = async (
     client: Bot,
     reaction: MessageReaction | PartialMessageReaction,
-    user: User
+    user: User,
 ) => {
     if (reaction.partial) {
         try {
             reaction = await reaction.fetch();
         } catch (error) {
             client.logger?.debug(
-                `Could not fetch partial reaction (id is ${reaction.message.id}), potential lack of permissions, assuming intentional (error: ${error})`
+                `Could not fetch partial reaction (id is ${reaction.message.id}), potential lack of permissions, assuming intentional (error: ${error})`,
             );
             return;
         }
@@ -178,16 +180,16 @@ export const handler: EventHandler = async (
                     .remove(user)
                     .catch((error) =>
                         client.logger?.debug(
-                            `Ignoring potential permission error while attempting to remove reaction in guild with ID ${reaction.message.guildId} (error: ${error})`
-                        )
+                            `Ignoring potential permission error while attempting to remove reaction in guild with ID ${reaction.message.guildId} (error: ${error})`,
+                        ),
                     );
             } else {
                 if (reaction.count >= guildConfig.minimumReacts) {
                     starPublicMessage(client, guildConfig, reaction).catch(
                         (error) =>
                             client.logger?.debug(
-                                `Ignoring potential error while attempting to star message in guild with ID ${reaction.message.guildId} (error: ${error})`
-                            )
+                                `Ignoring potential error while attempting to star message in guild with ID ${reaction.message.guildId} (error: ${error})`,
+                            ),
                     );
                 }
             }

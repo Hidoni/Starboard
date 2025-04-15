@@ -5,7 +5,7 @@ import { EventHandler } from '../interfaces/Event';
 export const name: string = 'threadCreate';
 export const handler: EventHandler = async (
     client: Bot,
-    thread: ThreadChannel
+    thread: ThreadChannel,
 ) => {
     if (!thread.joined) {
         console.log(`Not in thread ${thread.name}`);
@@ -13,8 +13,8 @@ export const handler: EventHandler = async (
             .join()
             .catch((error) =>
                 client.logger?.debug(
-                    `Ignoring potential permission error while attempting to join thread in guild with ID ${thread.guildId} (error: ${error})`
-                )
+                    `Ignoring potential permission error while attempting to join thread in guild with ID ${thread.guildId} (error: ${error})`,
+                ),
             );
     }
 };

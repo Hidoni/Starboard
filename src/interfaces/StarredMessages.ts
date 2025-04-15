@@ -1,5 +1,5 @@
-import { Snowflake } from "discord.js";
-import { Model } from "sequelize/types";
+import { Snowflake } from 'discord.js';
+import { Model } from 'sequelize/types';
 
 export interface StarredMessageInstance extends Model {
     messageId: Snowflake;

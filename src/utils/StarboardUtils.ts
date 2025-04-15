@@ -26,7 +26,7 @@ const DEFAULT_STARBOARD_EMOJI: string = '⭐';
 export async function findStarboardChannelForTextChannel(
     config: GuildConfigInstance,
     channel: GuildTextBasedChannel | ForumChannel | MediaChannel,
-    database: Database
+    database: Database,
 ): Promise<Snowflake | null> {
     const customChannel = await database.getCustomChannel(channel.id);
     if (customChannel) {
@@ -37,7 +37,7 @@ export async function findStarboardChannelForTextChannel(
             return findStarboardChannelForTextChannel(
                 config,
                 channel.parent,
-                database
+                database,
             );
         }
         return config.sfwChannelId;
@@ -50,7 +50,7 @@ export async function findStarboardChannelForTextChannel(
 }
 
 export async function generateStarboardEmbed(
-    reaction: MessageReaction
+    reaction: MessageReaction,
 ): Promise<EmbedBuilder> {
     const message = await reaction.message.fetch();
     let embed = generateBasicStarboardEmbed(message);
@@ -90,7 +90,7 @@ export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
                 name: 'Jump To Message',
                 value: `[Click Me!](${message.url})`,
                 inline: false,
-            }
+            },
         );
     const firstAttachment = message.attachments.first();
     if (firstAttachment) {
@@ -101,14 +101,14 @@ export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
 
 export function generateLeaderboardEmbed(
     leaderboard: StarredMessageInstance[],
-    page: number
+    page: number,
 ): EmbedBuilder {
     const pageCount = Math.ceil(leaderboard.length / 10);
     if (page <= 0) {
         throw new Error('Leaderboard page number must be 1 or higher');
     } else if (page > pageCount) {
         throw new Error(
-            `Leaderboard page number exceeds amount of pages (${pageCount})`
+            `Leaderboard page number exceeds amount of pages (${pageCount})`,
         );
     }
     const selectedUsers = leaderboard.slice((page - 1) * 10, page * 10);
@@ -118,7 +118,7 @@ export function generateLeaderboardEmbed(
             strings[0] + `${index + startIndex}. <@${user.userId}>\n`,
             strings[1] + `${user.starCount}\n`,
         ],
-        ['', '']
+        ['', ''],
     );
     return new EmbedBuilder()
         .setTitle('Leaderboards')
@@ -130,20 +130,20 @@ export function generateLeaderboardEmbed(
                 value: userRows,
                 inline: true,
             },
-            { name: 'Stars', value: starRows, inline: true }
+            { name: 'Stars', value: starRows, inline: true },
         );
 }
 
 export function generateLeaderboardComponentsRow(
     leaderboard: StarredMessageInstance[],
-    page: number
+    page: number,
 ): ActionRowBuilder<ButtonBuilder> {
     const pageCount = Math.ceil(leaderboard.length / 10);
     if (page <= 0) {
         throw new Error('Leaderboard page number must be 1 or higher');
     } else if (page > pageCount) {
         throw new Error(
-            `Leaderboard page number exceeds amount of pages (${pageCount})`
+            `Leaderboard page number exceeds amount of pages (${pageCount})`,
         );
     }
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -166,25 +166,28 @@ export function generateLeaderboardComponentsRow(
             .setEmoji('⏭')
             .setStyle(ButtonStyle.Primary)
             .setCustomId('leaderboard_LAST')
-            .setDisabled(page === pageCount)
+            .setDisabled(page === pageCount),
     );
 }
 
 export function hasPermissions(
     member: GuildMember | APIInteractionGuildMember,
     permissions: PermissionResolvable,
-    checkAdmin?: boolean
+    checkAdmin?: boolean,
 ): boolean {
     if (member instanceof GuildMember) {
         return member.permissions.has(permissions, checkAdmin);
     }
     const userPermissions = BigInt(member.permissions);
-    return new PermissionsBitField(userPermissions).has(permissions, checkAdmin);
+    return new PermissionsBitField(userPermissions).has(
+        permissions,
+        checkAdmin,
+    );
 }
 
 export async function fetchEmoteFromGuild(
     guild: Guild,
-    id: Snowflake
+    id: Snowflake,
 ): Promise<GuildEmoji | null> {
     try {
         return guild.emojis.fetch(id);
