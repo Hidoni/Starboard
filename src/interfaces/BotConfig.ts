@@ -1,13 +1,13 @@
-import { BitFieldResolvable, IntentsString, PartialTypes } from 'discord.js';
+import { GatewayIntentBits, Partials } from 'discord.js';
 import Database from '../database/DatabaseObject';
 
 export interface BotConfig {
-    intents: BitFieldResolvable<IntentsString, number>;
+    intents: GatewayIntentBits[];
     token: string;
     appId: string;
     database: Database;
     debugGuildId?: string;
-    partials?: PartialTypes[];
+    partials?: Partials[];
     commandsFolder?: string;
     eventsFolder?: string;
     componentHandlersFolder?: string;

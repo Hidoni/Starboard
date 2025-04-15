@@ -1,20 +1,21 @@
-import { APIInteractionGuildMember } from 'discord.js/node_modules/discord-api-types/payloads/v9/_interactions/base';
 import {
-    GuildMember,
-    MessageEmbed,
-    MessageReaction,
-    NewsChannel,
-    Permissions,
-    PermissionResolvable,
-    Snowflake,
-    TextChannel,
-    ThreadChannel,
+    ActionRowBuilder,
+    APIInteractionGuildMember,
+    ButtonBuilder,
+    ButtonStyle,
+    EmbedBuilder,
     ForumChannel,
     Guild,
     GuildEmoji,
-    MessageActionRow,
-    MessageButton,
+    GuildMember,
+    GuildTextBasedChannel,
+    MediaChannel,
     Message,
+    MessageReaction,
+    PermissionResolvable,
+    PermissionsBitField,
+    Snowflake,
+    ThreadChannel,
 } from 'discord.js';
 import Database from '../database/DatabaseObject';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
@@ -22,11 +23,9 @@ import { StarredMessageInstance } from '../interfaces/StarredMessages';
 
 const STARBOARD_EMBED_COLOR: readonly [number, number, number] = [255, 172, 51];
 const DEFAULT_STARBOARD_EMOJI: string = '⭐';
-type StarrableChannel = TextChannel | NewsChannel | ThreadChannel | ForumChannel;
-
 export async function findStarboardChannelForTextChannel(
     config: GuildConfigInstance,
-    channel: StarrableChannel,
+    channel: GuildTextBasedChannel | ForumChannel | MediaChannel,
     database: Database
 ): Promise<Snowflake | null> {
     const customChannel = await database.getCustomChannel(channel.id);
@@ -52,34 +51,34 @@ export async function findStarboardChannelForTextChannel(
 
 export async function generateStarboardEmbed(
     reaction: MessageReaction
-): Promise<MessageEmbed> {
+): Promise<EmbedBuilder> {
     const message = await reaction.message.fetch();
     let embed = generateBasicStarboardEmbed(message);
     if (!reaction.emoji.id) {
-        embed.setFooter(
-            ` ${reaction.emoji.name} ${reaction.count} ${
+        embed.setFooter({
+            text: ` ${reaction.emoji.name} ${reaction.count} ${
                 reaction.emoji.name === DEFAULT_STARBOARD_EMOJI ? 'stars' : ''
-            }`
-        );
+            }`,
+        });
     } else if (reaction.emoji.name && reaction.emoji.url) {
-        embed.setFooter(
-            `${reaction.count} ${reaction.emoji.name.toLowerCase()}`,
-            reaction.emoji.url
-        );
+        embed.setFooter({
+            text: `${reaction.count} ${reaction.emoji.name.toLowerCase()}`,
+            iconURL: reaction.emoji.url,
+        });
     }
     return embed;
 }
 
-export function generateBasicStarboardEmbed(message: Message): MessageEmbed {
-    let embed = new MessageEmbed()
+export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
+    let embed = new EmbedBuilder()
         .setTitle('Content')
         .setDescription(message.content)
         .setColor(STARBOARD_EMBED_COLOR)
         .setTimestamp(message.createdTimestamp)
-        .setAuthor(
-            'Starred Message',
-            message.author.displayAvatarURL({ dynamic: true })
-        )
+        .setAuthor({
+            name: 'Starred Message',
+            iconURL: message.author.displayAvatarURL(),
+        })
         .addFields(
             { name: 'Author', value: message.author.toString(), inline: true },
             {
@@ -103,7 +102,7 @@ export function generateBasicStarboardEmbed(message: Message): MessageEmbed {
 export function generateLeaderboardEmbed(
     leaderboard: StarredMessageInstance[],
     page: number
-): MessageEmbed {
+): EmbedBuilder {
     const pageCount = Math.ceil(leaderboard.length / 10);
     if (page <= 0) {
         throw new Error('Leaderboard page number must be 1 or higher');
@@ -121,9 +120,9 @@ export function generateLeaderboardEmbed(
         ],
         ['', '']
     );
-    return new MessageEmbed()
+    return new EmbedBuilder()
         .setTitle('Leaderboards')
-        .setFooter(`Page ${page} out of ${pageCount}`)
+        .setFooter({ text: `Page ${page} out of ${pageCount}` })
         .setColor(STARBOARD_EMBED_COLOR)
         .addFields(
             {
@@ -138,7 +137,7 @@ export function generateLeaderboardEmbed(
 export function generateLeaderboardComponentsRow(
     leaderboard: StarredMessageInstance[],
     page: number
-): MessageActionRow {
+): ActionRowBuilder<ButtonBuilder> {
     const pageCount = Math.ceil(leaderboard.length / 10);
     if (page <= 0) {
         throw new Error('Leaderboard page number must be 1 or higher');
@@ -147,25 +146,25 @@ export function generateLeaderboardComponentsRow(
             `Leaderboard page number exceeds amount of pages (${pageCount})`
         );
     }
-    return new MessageActionRow().addComponents(
-        new MessageButton()
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
             .setEmoji('⏮')
-            .setStyle('PRIMARY')
+            .setStyle(ButtonStyle.Primary)
             .setCustomId('leaderboard_FIRST')
             .setDisabled(page === 1),
-        new MessageButton()
+        new ButtonBuilder()
             .setEmoji('◀')
-            .setStyle('PRIMARY')
+            .setStyle(ButtonStyle.Primary)
             .setCustomId(`leaderboard_${page - 1}`)
             .setDisabled(page === 1),
-        new MessageButton()
+        new ButtonBuilder()
             .setEmoji('▶')
-            .setStyle('PRIMARY')
+            .setStyle(ButtonStyle.Primary)
             .setCustomId(`leaderboard_${page + 1}`)
             .setDisabled(page === pageCount),
-        new MessageButton()
+        new ButtonBuilder()
             .setEmoji('⏭')
-            .setStyle('PRIMARY')
+            .setStyle(ButtonStyle.Primary)
             .setCustomId('leaderboard_LAST')
             .setDisabled(page === pageCount)
     );
@@ -180,7 +179,7 @@ export function hasPermissions(
         return member.permissions.has(permissions, checkAdmin);
     }
     const userPermissions = BigInt(member.permissions);
-    return new Permissions(userPermissions).has(permissions, checkAdmin);
+    return new PermissionsBitField(userPermissions).has(permissions, checkAdmin);
 }
 
 export async function fetchEmoteFromGuild(

@@ -1,15 +1,14 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Bot } from '../client/Client';
-import { CommandHandler } from '../interfaces/Command';
+import { ChatInputCommandHandler } from '../interfaces/Command';
 import {
     generateLeaderboardComponentsRow,
     generateLeaderboardEmbed,
 } from '../utils/StarboardUtils';
 
-export const handler: CommandHandler = async (
+export const handler: ChatInputCommandHandler = async (
     client: Bot,
-    interaction: CommandInteraction
+    interaction: ChatInputCommandInteraction
 ) => {
     const userStars = await client.database.getStarredMessagesInGuildByUsers(
         interaction.guildId!

@@ -1,8 +1,8 @@
 import log4js from 'log4js';
-import { Intents } from 'discord.js';
 import { Bot } from './client/Client';
 import path from 'path';
 import Database from './database/DatabaseObject';
+import { GatewayIntentBits, Partials } from 'discord.js';
 
 log4js.configure('./config/log4js.json');
 const logger = log4js.getLogger('starboard');
@@ -21,7 +21,10 @@ for (const envVar of REQUIRED_ENV_VARS) {
 
 const bot = new Bot(
     {
-        intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
+        intents: [
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMessageReactions,
+        ],
         token: process.env.BOT_TOKEN!,
         appId: process.env.BOT_APPLICATION_ID!,
         database: new Database(process.env.DATABASE_PATH!, logger),
@@ -29,7 +32,7 @@ const bot = new Bot(
         commandsFolder: path.join(__dirname, 'commands/'),
         eventsFolder: path.join(__dirname, 'events/'),
         componentHandlersFolder: path.join(__dirname, 'component_handlers/'),
-        partials: ['REACTION', 'MESSAGE'],
+        partials: [Partials.Reaction, Partials.Message],
     },
     logger
 );

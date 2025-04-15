@@ -1,8 +1,8 @@
-import {
-    GuildEmoji,
+import {    Channel, ChannelType,
+    Emoji,
+    GuildTextBasedChannel,
     MessageReaction,
     PartialMessageReaction,
-    ReactionEmoji,
     TextBasedChannel,
     User,
 } from 'discord.js';
@@ -16,16 +16,20 @@ import {
 } from '../utils/StarboardUtils';
 
 const VALID_STARBOARD_CHANNEL_TYPES = [
-    'GUILD_TEXT',
-    'GUILD_NEWS',
-    'GUILD_NEWS_THREAD',
-    'GUILD_PUBLIC_THREAD',
-    'GUILD_PRIVATE_THREAD',
+    ChannelType.GuildText,
+    ChannelType.GuildAnnouncement,
+    ChannelType.AnnouncementThread,
+    ChannelType.PublicThread,
+    ChannelType.PrivateThread
 ];
+
+function isGuildTextBasedChannel(channel: TextBasedChannel): channel is GuildTextBasedChannel {
+    return 'guildId' in channel
+}
 
 function isStarEmoji(
     guildConfig: GuildConfigInstance,
-    emoji: GuildEmoji | ReactionEmoji
+    emoji: Emoji
 ) {
     if (!emoji.id && guildConfig.isUnicode) {
         return guildConfig.emoji === emoji.name;
@@ -35,12 +39,9 @@ function isStarEmoji(
 
 async function getStarboardChannelFromChannel(
     config: GuildConfigInstance,
-    channel: TextBasedChannel,
+    channel: GuildTextBasedChannel,
     client: Bot
-): Promise<TextBasedChannel | null> {
-    if (channel.type === 'DM' || channel.type == 'GUILD_VOICE' || channel.type == "GUILD_STAGE_VOICE") {
-        throw new Error('Invalid channel for starred message');
-    }
+): Promise<GuildTextBasedChannel | null> {
     const channelId = await findStarboardChannelForTextChannel(
         config,
         channel,
@@ -57,9 +58,8 @@ async function getStarboardChannelFromChannel(
         client.logger?.debug(
             `Misconfigured starboard channel (id is ${channelId}) isn't text-based`
         );
-        return null;
     }
-    return starboardChannel as TextBasedChannel;
+    return starboardChannel as GuildTextBasedChannel;
 }
 
 async function starPublicMessage(
@@ -83,6 +83,9 @@ async function updateExistingStarredMessage(
     client: Bot,
     starredMessage: StarredMessageInstance
 ) {
+    if (!isGuildTextBasedChannel(reaction.message.channel)) {
+        return;
+    }
     const starboardChannel = await getStarboardChannelFromChannel(
         config,
         reaction.message.channel,
@@ -114,14 +117,16 @@ async function createNewStarredMessage(
     config: GuildConfigInstance,
     client: Bot
 ) {
+    if (!isGuildTextBasedChannel(reaction.message.channel)) {
+        return;
+    }
     const starboardChannel = await getStarboardChannelFromChannel(
         config,
         reaction.message.channel,
         client
     );
     if (starboardChannel) {
-        let starboardMessage = await (starboardChannel as TextBasedChannel)
-            .send({ embeds: [await generateStarboardEmbed(reaction)] })
+        let starboardMessage = await starboardChannel.send({ embeds: [await generateStarboardEmbed(reaction)] })
             .catch((error) => {
                 client.logger?.error(
                     `Could not send message in starboard channel (error: ${error})`

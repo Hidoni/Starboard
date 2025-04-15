@@ -1,16 +1,11 @@
-import { ContextMenuCommandBuilder } from '@discordjs/builders';
-import {
-    ContextMenuInteraction,
-    MessageActionRow,
-    MessageButton,
-} from 'discord.js';
+import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, ButtonStyle, ContextMenuCommandBuilder, ContextMenuCommandInteraction } from 'discord.js';
 import { Bot } from '../client/Client';
-import { ContextMenuHandler } from '../interfaces/Command';
+import { ContextMenuCommandHandler } from '../interfaces/Command';
 import { generateBasicStarboardEmbed } from '../utils/StarboardUtils';
 
-export const handler: ContextMenuHandler = async (
+export const handler: ContextMenuCommandHandler = async (
     client: Bot,
-    interaction: ContextMenuInteraction
+    interaction: ContextMenuCommandInteraction
 ) => {
     const message = await interaction.channel?.messages.fetch(
         interaction.targetId!
@@ -21,13 +16,13 @@ export const handler: ContextMenuHandler = async (
         );
     }
     const embed = generateBasicStarboardEmbed(message);
-    const deleteButtonRow = new MessageActionRow().addComponents(
-        new MessageButton()
+    const deleteButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
             .setCustomId('private_starboard_DELETE')
             .setLabel('Delete Message')
-            .setStyle('DANGER')
+            .setStyle(ButtonStyle.Danger)
     );
-    interaction.user.send({ embeds: [embed], components: [deleteButtonRow] });
+    interaction.user.send({ embeds: [embed], components: [deleteButtonRow]});
     interaction.reply({
         content:
             'Message saved to personal starboard succesfully, check your DMs!',
@@ -36,5 +31,5 @@ export const handler: ContextMenuHandler = async (
 };
 export const builder = new ContextMenuCommandBuilder()
     .setName('Save To Personal Starboard')
-    .setType(3);
+    .setType(ApplicationCommandType.Message);
 export const guildOnly: boolean = true;

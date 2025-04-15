@@ -1,14 +1,6 @@
-import {
-    SlashCommandBuilder,
-    SlashCommandChannelOption,
-    SlashCommandNumberOption,
-    SlashCommandStringOption,
-    SlashCommandSubcommandBuilder,
-    SlashCommandSubcommandGroupBuilder,
-} from '@discordjs/builders';
-import { CommandInteraction, PermissionString } from 'discord.js';
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, PermissionResolvable, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandNumberOption, SlashCommandStringOption, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js';
 import { Bot } from '../client/Client';
-import { CommandHandler } from '../interfaces/Command';
+import { ChatInputCommandHandler } from '../interfaces/Command';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
 import { fetchEmoteFromGuild } from '../utils/StarboardUtils';
 
@@ -23,13 +15,13 @@ const CONFIG_OPTION_MAP: Map<string, ConfigCommandOptionHandler> = new Map([
 
 interface ConfigCommandOptionHandler {
     (
-        interaction: CommandInteraction,
+        interaction: ChatInputCommandInteraction,
         config: GuildConfigInstance
     ): Promise<string>;
 }
 
 async function sendUnknownCommandError(
-    interaction: CommandInteraction
+    interaction: ChatInputCommandInteraction
 ): Promise<void> {
     interaction.reply({
         content: 'Error: Unknown Command',
@@ -39,7 +31,7 @@ async function sendUnknownCommandError(
 
 async function handleCustomStarboardCommandGroup(
     client: Bot,
-    interaction: CommandInteraction
+    interaction: ChatInputCommandInteraction
 ): Promise<void> {
     switch (interaction.options.getSubcommand(false)) {
         case 'add':
@@ -84,7 +76,7 @@ async function handleCustomStarboardCommandGroup(
 }
 
 async function modifyStarboardEmote(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
     config: GuildConfigInstance
 ): Promise<string> {
     const emote = interaction.options.getString('emote', false);
@@ -117,7 +109,7 @@ async function modifyStarboardEmote(
 }
 
 async function modifyStarboardMinimum(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
     config: GuildConfigInstance
 ): Promise<string> {
     const minimum = interaction.options.getNumber('minimum', false);
@@ -132,7 +124,7 @@ async function modifyStarboardMinimum(
 }
 
 async function modifyStarboardSFW(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
     config: GuildConfigInstance
 ): Promise<string> {
     const sfw = interaction.options.getChannel('sfw', false);
@@ -144,7 +136,7 @@ async function modifyStarboardSFW(
 }
 
 async function modifyStarboardNSFW(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
     config: GuildConfigInstance
 ): Promise<string> {
     const sfw = interaction.options.getChannel('nsfw', false);
@@ -156,11 +148,11 @@ async function modifyStarboardNSFW(
 }
 
 async function handleServerConfigurationSubcommand(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
     client: Bot
 ): Promise<void> {
     const subCommand = interaction.options.data.find(
-        (argument) => argument.type === 'SUB_COMMAND'
+        (argument) => argument.type === ApplicationCommandOptionType.Subcommand
     );
     if (!subCommand) {
         interaction.reply({
@@ -197,7 +189,7 @@ async function handleServerConfigurationSubcommand(
 
 async function handleDefaultCommandGroup(
     client: Bot,
-    interaction: CommandInteraction
+    interaction: ChatInputCommandInteraction
 ): Promise<void> {
     const subCommand = interaction.options.getSubcommand(false);
     switch (subCommand) {
@@ -210,9 +202,9 @@ async function handleDefaultCommandGroup(
     }
 }
 
-export const handler: CommandHandler = async (
+export const handler: ChatInputCommandHandler = async (
     client: Bot,
-    interaction: CommandInteraction
+    interaction: ChatInputCommandInteraction
 ) => {
     switch (interaction.options.getSubcommandGroup(false)) {
         case 'custom':
@@ -303,7 +295,7 @@ export const builder = new SlashCommandBuilder()
             )
     );
 export const guildOnly: boolean = true;
-export const permissions: PermissionString[] = [
-    'MANAGE_GUILD',
-    'MANAGE_CHANNELS',
+export const permissions: PermissionResolvable[] = [
+    'ManageGuild',
+    'ManageChannels',
 ];

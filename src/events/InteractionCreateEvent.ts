@@ -1,11 +1,11 @@
 import {
-    ContextMenuCommandBuilder,
-    SlashCommandBuilder,
-} from '@discordjs/builders';
-import {
+    ApplicationCommandType,
+    ChatInputCommandInteraction,
     CommandInteraction,
-    ContextMenuInteraction,
+    ContextMenuCommandBuilder,
+    ContextMenuCommandInteraction,
     Interaction,
+    SlashCommandBuilder,
 } from 'discord.js';
 import { Bot } from '../client/Client';
 import { Command } from '../interfaces/Command';
@@ -14,7 +14,7 @@ import { hasPermissions } from '../utils/StarboardUtils';
 
 async function canRunCommand(
     client: Bot,
-    interaction: CommandInteraction | ContextMenuInteraction,
+    interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
     command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>
 ): Promise<boolean> {
     if (command.guildOnly && !interaction.guild) {
@@ -49,10 +49,11 @@ async function canRunCommand(
 function handleCommandCall(
     command: Command<SlashCommandBuilder | ContextMenuCommandBuilder>,
     client: Bot,
-    interaction: CommandInteraction | ContextMenuInteraction
+    interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction
 ): void {
     if (
-        interaction.isContextMenu() &&
+        (interaction.commandType === ApplicationCommandType.Message ||
+            interaction.commandType === ApplicationCommandType.User) &&
         command.builder instanceof ContextMenuCommandBuilder
     ) {
         (command as Command<ContextMenuCommandBuilder>).handler(
@@ -60,7 +61,7 @@ function handleCommandCall(
             interaction
         );
     } else if (
-        interaction.isCommand() &&
+        interaction.commandType === ApplicationCommandType.ChatInput &&
         command.builder instanceof SlashCommandBuilder
     ) {
         (command as Command<SlashCommandBuilder>).handler(client, interaction);
@@ -76,7 +77,7 @@ export const handler: EventHandler = async (
     client: Bot,
     interaction: Interaction
 ) => {
-    if (interaction.isCommand() || interaction.isContextMenu()) {
+    if (interaction.isCommand()) {
         const command = client.getCommand(interaction.commandName);
         if (command) {
             if (await canRunCommand(client, interaction, command)) {

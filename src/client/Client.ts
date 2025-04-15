@@ -1,18 +1,19 @@
 import { Logger } from 'log4js';
-import { Client, Collection } from 'discord.js';
+import {
+    Client,
+    Collection,
+    ContextMenuCommandBuilder,
+    REST,
+    Routes,
+    SlashCommandBuilder,
+} from 'discord.js';
 import { BotConfig } from '../interfaces/BotConfig';
 import { Command } from '../interfaces/Command';
 import { Event } from '../interfaces/Event';
 import path from 'path';
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v9';
 import glob from 'glob';
 import Database from '../database/DatabaseObject';
 import { ComponentHandler } from '../interfaces/ComponentHandler';
-import {
-    ContextMenuCommandBuilder,
-    SlashCommandBuilder,
-} from '@discordjs/builders';
 
 class Bot extends Client {
     public logger?: Logger;
@@ -31,7 +32,7 @@ class Bot extends Client {
         this.config = config;
         this.logger = logger;
         this.database = config.database;
-        this.restAPI = new REST({ version: '9' }).setToken(config.token);
+        this.restAPI = new REST().setToken(config.token);
 
         if (config.commandsFolder) {
             this.loadCommands(config.commandsFolder);
