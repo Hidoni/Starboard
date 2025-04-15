@@ -1,6 +1,7 @@
 import {
     ActionRowBuilder,
     APIInteractionGuildMember,
+    Attachment,
     ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
@@ -12,6 +13,7 @@ import {
     MediaChannel,
     Message,
     MessageReaction,
+    MessageSnapshot,
     PermissionResolvable,
     PermissionsBitField,
     Snowflake,
@@ -69,6 +71,34 @@ export async function generateStarboardEmbed(
     return embed;
 }
 
+function getMessageSnapshot(message: Message): MessageSnapshot | undefined {
+    if (message.messageSnapshots) {
+        return message.messageSnapshots.first();
+    }
+}
+
+function getMessageContent(message: Message | MessageSnapshot): string {
+    return message.content;
+}
+
+function getAttachmentUrl(message: Message | MessageSnapshot): string | undefined {
+    const messageAttachment = message.attachments.first();
+    if (messageAttachment) {
+        return messageAttachment.url;
+    }
+    const embed = message.embeds[0];
+    if (embed && embed.image) {
+        return embed.image.url;
+    }
+}
+
+function getThumbnailUrl(message: Message | MessageSnapshot): string | undefined {
+    const embed = message.embeds[0]
+    if (embed && embed.thumbnail) {
+        return embed.thumbnail.url;
+    }
+}
+
 export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
     let embed = new EmbedBuilder()
         .setColor(STARBOARD_EMBED_COLOR)
@@ -90,12 +120,14 @@ export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
                 inline: false,
             },
         );
-    if (message.content) {
-        embed.setTitle('Content').setDescription(message.content);
+    const embeddedMessage = getMessageSnapshot(message) ?? message;
+    const content = getMessageContent(embeddedMessage);
+    if (content) {
+        embed.setTitle('Content').setDescription(content);
     }
-    const firstAttachment = message.attachments.first();
-    if (firstAttachment) {
-        embed.setImage(firstAttachment.url);
+    const attachmentUrl = getAttachmentUrl(embeddedMessage) ?? getThumbnailUrl(embeddedMessage);
+    if (attachmentUrl) {
+        embed.setImage(attachmentUrl);
     }
     return embed;
 }
