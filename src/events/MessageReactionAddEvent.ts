@@ -98,7 +98,14 @@ async function updateExistingStarredMessage(
                 starredMessage.starboardMessageId,
             );
             starboardMessage.edit({
-                components: [await generateStarboardMessageComponentForGuildStarboard(reaction)],
+                components: [
+                    await generateStarboardMessageComponentForGuildStarboard(
+                        reaction,
+                    ),
+                ],
+                // Workaround for legacy messages which get a new star with Components V2
+                embeds: [],
+                flags: MessageFlags.IsComponentsV2 as unknown as undefined,
             });
         } catch (e) {
             client.logger?.debug(
