@@ -4,6 +4,8 @@ import {
     Attachment,
     ButtonBuilder,
     ButtonStyle,
+    ContainerBuilder,
+    Embed,
     EmbedBuilder,
     ForumChannel,
     Guild,
@@ -11,20 +13,62 @@ import {
     GuildMember,
     GuildTextBasedChannel,
     MediaChannel,
+    MediaGalleryBuilder,
+    MediaGalleryItemBuilder,
     Message,
     MessageReaction,
     MessageSnapshot,
     PermissionResolvable,
     PermissionsBitField,
+    SectionBuilder,
+    SeparatorBuilder,
+    SeparatorSpacingSize,
     Snowflake,
+    TextDisplayBuilder,
     ThreadChannel,
+    ThumbnailBuilder,
 } from 'discord.js';
 import Database from '../database/DatabaseObject';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
 import { StarredMessageInstance } from '../interfaces/StarredMessages';
+import { enumerate } from './IterableUtils';
+import { escapeRegex } from './RegExpUtils';
+import { getTenorDataFromPostID } from './TenorUtils';
+import { LRUCache } from 'lru-cache';
 
-const STARBOARD_EMBED_COLOR: readonly [number, number, number] = [255, 172, 51];
+const STARBOARD_EMBED_COLOR: [number, number, number] = [255, 172, 51];
 const DEFAULT_STARBOARD_EMOJI: string = '⭐';
+const KNOWN_NO_CONTENT_EMBED_TYPES = ['gifv', 'image'];
+const MESSAGE_CONTENT_MAX_LENGTH = 3000;
+
+const ONE_DAY_IN_MS = 86400000;
+const TENOR_LRU_CACHE = new LRUCache<string, string>({
+    max: 1000,
+    ttl: ONE_DAY_IN_MS,
+    fetchMethod: async (key) => {
+        const tenorData = await getTenorDataFromPostID(key, ['gif']);
+        if (!tenorData.media_formats['gif']) {
+            return undefined;
+        }
+        return tenorData.media_formats['gif'].url;
+    },
+});
+const KNOWN_GIF_EMBED_PROVIDERS: {
+    [provider: string]: (embed: Embed) => Promise<string | null>;
+} = {
+    Giphy: async (embed: Embed) => embed.video?.url.slice(0, -3) + 'gif',
+    Tenor: async (embed: Embed) => {
+        if (!embed.url) {
+            return null;
+        }
+        const postID = embed.url.split('-').at(-1);
+        if (!postID) {
+            return null;
+        }
+        return (await TENOR_LRU_CACHE.fetch(postID)) ?? null;
+    },
+};
+
 export async function findStarboardChannelForTextChannel(
     config: GuildConfigInstance,
     channel: GuildTextBasedChannel | ForumChannel | MediaChannel,
@@ -51,94 +95,268 @@ export async function findStarboardChannelForTextChannel(
         : config.sfwChannelId;
 }
 
-export async function generateStarboardEmbed(
-    reaction: MessageReaction,
-): Promise<EmbedBuilder> {
-    const message = await reaction.message.fetch();
-    let embed = generateBasicStarboardEmbed(message);
-    if (!reaction.emoji.id) {
-        embed.setFooter({
-            text: ` ${reaction.emoji.name} ${reaction.count} ${
-                reaction.emoji.name === DEFAULT_STARBOARD_EMOJI ? 'stars' : ''
-            }`,
-        });
-    } else if (reaction.emoji.name && reaction.emoji.url) {
-        embed.setFooter({
-            text: `${reaction.count} ${reaction.emoji.name.toLowerCase()}`,
-            iconURL: reaction.emoji.url,
-        });
-    }
-    return embed;
-}
-
 function getMessageSnapshot(message: Message): MessageSnapshot | undefined {
     if (message.messageSnapshots) {
         return message.messageSnapshots.first();
     }
 }
 
-function getMessageContent(message: Message | MessageSnapshot): string {
-    return message.content;
+function isVisualAttachment(attachment: Attachment): boolean {
+    return (
+        attachment.contentType != null &&
+        (attachment.contentType.startsWith('image/') ||
+            attachment.contentType.startsWith('video/'))
+    );
 }
 
-function getAttachmentUrl(
-    message: Message | MessageSnapshot,
-): string | undefined {
-    const messageAttachment = message.attachments.first();
-    if (messageAttachment) {
-        return messageAttachment.url;
+async function createMediaGalleryFromIterable<T>(
+    iterable: Iterable<T>,
+    descriptionProvider: (entry: T, index: number) => string,
+    urlProvider: (entry: T) => Promise<string>,
+    spoilerProvider: (entry: T) => boolean,
+): Promise<MediaGalleryBuilder | null> {
+    let mediaGalleryBuilder = new MediaGalleryBuilder();
+    for (const [index, entry] of enumerate(iterable)) {
+        mediaGalleryBuilder = mediaGalleryBuilder.addItems(
+            new MediaGalleryItemBuilder({
+                description: descriptionProvider(entry, index),
+                media: {
+                    url: await urlProvider(entry),
+                },
+                spoiler: spoilerProvider(entry),
+            }),
+        );
     }
-    const embed = message.embeds[0];
-    if (embed && embed.image) {
+    if (mediaGalleryBuilder.items.length !== 0) {
+        return mediaGalleryBuilder;
+    }
+    return null;
+}
+
+async function getMessageVisualAttachmentsAsComponent(
+    message: Message | MessageSnapshot,
+): Promise<MediaGalleryBuilder | null> {
+    const visualAttachments = message.attachments.filter(isVisualAttachment);
+    return createMediaGalleryFromIterable(
+        visualAttachments.values(),
+        (attachment, index) => {
+            const baseDescription = `Starred visual message attachment number ${
+                index + 1
+            } of ${visualAttachments.size}`;
+            return attachment.description
+                ? `${baseDescription}. Original description: ${attachment.description}`
+                : baseDescription;
+        },
+        async (attachment) => attachment.url,
+        (attachment) => attachment.spoiler,
+    );
+}
+
+function isEmbedKnownGifvEmbed(embed: Embed): boolean {
+    return (
+        Object.keys(KNOWN_GIF_EMBED_PROVIDERS).find(
+            (value) => value === embed.provider?.name,
+        ) != undefined
+    );
+}
+
+async function getEmbedImageUrl(embed: Embed): Promise<string | null> {
+    if (isEmbedKnownGifvEmbed(embed)) {
+        return await KNOWN_GIF_EMBED_PROVIDERS[embed.provider!.name!](embed);
+    }
+    if (embed.video) {
+        return embed.video.url;
+    }
+    if (embed.image) {
         return embed.image.url;
     }
-    const sticker = message.stickers.first();
-    if (sticker) {
-        return sticker.url;
-    }
-}
-
-function getThumbnailUrl(
-    message: Message | MessageSnapshot,
-): string | undefined {
-    const embed = message.embeds[0];
-    if (embed && embed.thumbnail) {
+    if (embed.thumbnail) {
         return embed.thumbnail.url;
     }
+    return null;
 }
 
-export function generateBasicStarboardEmbed(message: Message): EmbedBuilder {
-    let embed = new EmbedBuilder()
-        .setColor(STARBOARD_EMBED_COLOR)
-        .setTimestamp(message.createdTimestamp)
-        .setAuthor({
-            name: 'Starred Message',
-            iconURL: message.author.displayAvatarURL(),
-        })
-        .addFields(
-            { name: 'Author', value: message.author.toString(), inline: true },
-            {
-                name: 'Channel',
-                value: message.channel.toString(),
-                inline: true,
-            },
-            {
-                name: 'Jump To Message',
-                value: `[Click Me!](${message.url})`,
-                inline: false,
-            },
+function isMessageNoContentEmbed(message: Message | MessageSnapshot): boolean {
+    return (
+        message.embeds.length === 1 &&
+        KNOWN_NO_CONTENT_EMBED_TYPES.find(
+            (value) => value === message.embeds[0].data.type,
+        ) !== undefined &&
+        message.content == message.embeds[0].url
+    );
+}
+
+function isEmbedSpoilered(
+    message: Message | MessageSnapshot,
+    embed: Embed,
+): boolean {
+    if (!embed.url) {
+        return false;
+    }
+    const spoileredUrlRegex = new RegExp(
+        `${escapeRegex('||')}\\s+${escapeRegex(embed.url)}\\s+${escapeRegex(
+            '||',
+        )}`,
+    );
+    return spoileredUrlRegex.test(message.content);
+}
+
+async function getEmbedsAsComponent(
+    message: Message | MessageSnapshot,
+): Promise<MediaGalleryBuilder | null> {
+    const embedsWithAttachments = (
+        await Promise.all(
+            message.embeds.map(
+                async (embed: Embed): Promise<[Embed, string | null]> => [
+                    embed,
+                    await getEmbedImageUrl(embed),
+                ],
+            ),
+        )
+    ).filter(([, url]) => url);
+    return createMediaGalleryFromIterable(
+        embedsWithAttachments,
+        ([embed], index) => {
+            const baseDescription = `Starred embed attachment number ${
+                index + 1
+            } of ${embedsWithAttachments}`;
+            return embed.description
+                ? `${baseDescription}. Original description: ${embed.description}`
+                : baseDescription;
+        },
+        async ([, url]) => url!,
+        ([embed]) => isEmbedSpoilered(message, embed),
+    );
+}
+
+async function getMessageStickersAsComponent(
+    message: Message | MessageSnapshot,
+): Promise<MediaGalleryBuilder | null> {
+    return createMediaGalleryFromIterable(
+        message.stickers.values(),
+        (sticker, index) => {
+            const baseDescription = `Starred visual message attachment number ${
+                index + 1
+            } of ${message.stickers.size}`;
+            return sticker.description
+                ? `${baseDescription}. Original description: ${sticker.description}`
+                : baseDescription;
+        },
+        async (sticker) => sticker.url,
+        () => false,
+    );
+}
+
+export async function generateBasicStarboardMessageComponent(
+    message: Message,
+    footerText?: string,
+    additionalButtons?: ButtonBuilder[],
+): Promise<ContainerBuilder> {
+    const contentSourceMessage = getMessageSnapshot(message) ?? message;
+
+    const createdAtTimestamp = Math.floor(message.createdTimestamp / 1000);
+    const footerTimestamp = `<t:${createdAtTimestamp}:d> (<t:${createdAtTimestamp}:R>)`;
+    const footer = footerText
+        ? `-# ${footerText} • ${footerTimestamp}`
+        : footerTimestamp;
+    const jumpToMessageButton = new ButtonBuilder()
+        .setLabel('Jump to Message')
+        .setStyle(ButtonStyle.Link)
+        .setURL(message.url);
+    const buttons = additionalButtons
+        ? [jumpToMessageButton, ...additionalButtons]
+        : [jumpToMessageButton];
+
+    let builder = new ContainerBuilder()
+        .setAccentColor(STARBOARD_EMBED_COLOR)
+        .addSectionComponents(
+            new SectionBuilder()
+                .addTextDisplayComponents(
+                    new TextDisplayBuilder({ content: '# Starred Message' }),
+                    new TextDisplayBuilder({
+                        content: `**Author: ${message.author}**`,
+                    }),
+                    new TextDisplayBuilder({
+                        content: `**Channel: ${message.channel}**`,
+                    }),
+                )
+                .setThumbnailAccessory(
+                    new ThumbnailBuilder({
+                        description: `${message.author.username}'s avatar`,
+                        media: { url: message.author.displayAvatarURL() },
+                    }),
+                ),
+        )
+        .addSeparatorComponents(
+            new SeparatorBuilder({
+                spacing: SeparatorSpacingSize.Small,
+                divider: true,
+            }),
         );
-    const embeddedMessage = getMessageSnapshot(message) ?? message;
-    const content = getMessageContent(embeddedMessage);
-    if (content) {
-        embed.setTitle('Content').setDescription(content);
+    if (
+        contentSourceMessage.content &&
+        !isMessageNoContentEmbed(contentSourceMessage)
+    ) {
+        const originalContent = contentSourceMessage.content;
+        const content =
+            originalContent.length >= MESSAGE_CONTENT_MAX_LENGTH
+                ? originalContent.slice(0, MESSAGE_CONTENT_MAX_LENGTH) + '...'
+                : originalContent;
+        builder = builder.addTextDisplayComponents(
+            new TextDisplayBuilder({ content: content }),
+        );
     }
-    const attachmentUrl =
-        getAttachmentUrl(embeddedMessage) ?? getThumbnailUrl(embeddedMessage);
-    if (attachmentUrl) {
-        embed.setImage(attachmentUrl);
+    const messageAttachments = await getMessageVisualAttachmentsAsComponent(
+        contentSourceMessage,
+    );
+    if (messageAttachments) {
+        builder = builder.addMediaGalleryComponents(messageAttachments);
     }
-    return embed;
+    const embeds = await getEmbedsAsComponent(contentSourceMessage);
+    if (embeds) {
+        builder = builder.addMediaGalleryComponents(embeds);
+    }
+    const stickers = await getMessageStickersAsComponent(contentSourceMessage);
+    if (stickers) {
+        builder = builder.addMediaGalleryComponents(stickers);
+    }
+    return builder
+        .addActionRowComponents(
+            new ActionRowBuilder<ButtonBuilder>({
+                components: buttons,
+            }),
+        )
+        .addTextDisplayComponents(new TextDisplayBuilder({ content: footer }));
+}
+
+export async function generateStarboardMessageComponentForGuildStarboard(
+    reaction: MessageReaction,
+): Promise<ContainerBuilder> {
+    let footer = '';
+    if (!reaction.emoji.id) {
+        footer = `${reaction.emoji.name} ${reaction.count} ${
+            reaction.emoji.name === DEFAULT_STARBOARD_EMOJI ? 'stars' : ''
+        }`;
+    } else if (reaction.emoji.name) {
+        footer = `${reaction.emoji} ${
+            reaction.count
+        } ${reaction.emoji.name.toLowerCase()}`;
+    }
+    return generateBasicStarboardMessageComponent(
+        await reaction.message.fetch(),
+        footer,
+    );
+}
+
+export async function generateStarboardmessageComponentForPrivateStarboard(
+    message: Message,
+): Promise<ContainerBuilder> {
+    return generateBasicStarboardMessageComponent(message, undefined, [
+        new ButtonBuilder()
+            .setCustomId('private_starboard_DELETE')
+            .setLabel('Delete Message')
+            .setStyle(ButtonStyle.Danger),
+    ]);
 }
 
 export function generateLeaderboardEmbed(

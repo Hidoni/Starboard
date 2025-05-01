@@ -1,8 +1,8 @@
 import {
-    Channel,
     ChannelType,
     Emoji,
     GuildTextBasedChannel,
+    MessageFlags,
     MessageReaction,
     PartialMessageReaction,
     TextBasedChannel,
@@ -13,8 +13,8 @@ import { EventHandler } from '../interfaces/Event';
 import { GuildConfigInstance } from '../interfaces/GuildConfig';
 import { StarredMessageInstance } from '../interfaces/StarredMessages';
 import {
-    generateStarboardEmbed,
     findStarboardChannelForTextChannel,
+    generateStarboardMessageComponentForGuildStarboard,
 } from '../utils/StarboardUtils';
 
 const VALID_STARBOARD_CHANNEL_TYPES = [
@@ -98,7 +98,7 @@ async function updateExistingStarredMessage(
                 starredMessage.starboardMessageId,
             );
             starboardMessage.edit({
-                embeds: [await generateStarboardEmbed(reaction)],
+                components: [await generateStarboardMessageComponentForGuildStarboard(reaction)],
             });
         } catch (e) {
             client.logger?.debug(
@@ -128,7 +128,14 @@ async function createNewStarredMessage(
     );
     if (starboardChannel) {
         let starboardMessage = await starboardChannel
-            .send({ embeds: [await generateStarboardEmbed(reaction)] })
+            .send({
+                components: [
+                    await generateStarboardMessageComponentForGuildStarboard(
+                        reaction,
+                    ),
+                ],
+                flags: MessageFlags.IsComponentsV2,
+            })
             .catch((error) => {
                 client.logger?.error(
                     `Could not send message in starboard channel (error: ${error})`,

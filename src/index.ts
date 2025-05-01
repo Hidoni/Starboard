@@ -11,6 +11,7 @@ const REQUIRED_ENV_VARS: string[] = [
     'BOT_TOKEN',
     'BOT_APPLICATION_ID',
     'DATABASE_PATH',
+    'TENOR_API_KEY'
 ];
 for (const envVar of REQUIRED_ENV_VARS) {
     if (!process.env[envVar]) {
