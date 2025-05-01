@@ -103,6 +103,7 @@ async function updateExistingStarredMessage(
                         reaction,
                     ),
                 ],
+                allowedMentions: {},
                 // Workaround for legacy messages which get a new star with Components V2
                 embeds: [],
                 flags: MessageFlags.IsComponentsV2 as unknown as undefined,
@@ -142,6 +143,7 @@ async function createNewStarredMessage(
                     ),
                 ],
                 flags: MessageFlags.IsComponentsV2,
+                allowedMentions: {}
             })
             .catch((error) => {
                 client.logger?.error(
